@@ -12,6 +12,60 @@ No Samsung account. No subscription. No cloud.
 
 **Built by WB**
 
+## Home Assistant App
+
+This repository now also contains a first-pass Home Assistant App package in [`sawsube/`](sawsube). It is intended for Home Assistant OS / Supervised users who want to install SAWSUBE from the Apps panel instead of running Docker manually.
+
+What is included:
+
+- a Home Assistant App repository manifest in [`repository.yaml`](repository.yaml)
+- a Supervisor app definition in [`sawsube/config.yaml`](sawsube/config.yaml)
+- a buildable container image definition in [`sawsube/Dockerfile`](sawsube/Dockerfile)
+- app docs and translations for the Home Assistant UI
+
+Current scope:
+
+- the app package is aimed at the core SAWSUBE web experience first
+- TV discovery and Wake-on-LAN are enabled via `host_network`
+- the advanced TizenBrew / debloat workflows are still likely to need extra Home Assistant-specific work before they are production-ready inside Supervisor
+
+### Fork and publish flow
+
+1. Fork this repository on GitHub.
+2. In your fork, keep the `sawsube/` folder and `repository.yaml` at the repository root.
+3. Add your fork URL as a custom Apps repository inside Home Assistant.
+4. Install the `SAWSUBE` app from that repository.
+5. If you want registry-backed installs instead of local builds, enable the GitHub Actions workflow added in `.github/workflows/publish-home-assistant-app.yml` and then set the `image:` field in `sawsube/config.yaml` to your published GHCR image.
+
+For more Home Assistant-specific usage notes, see [`sawsube/DOCS.md`](sawsube/DOCS.md).
+
+## HACS Integration
+
+This repository now also contains a HACS-installable custom integration in [`custom_components/sawsube`](custom_components/sawsube).
+
+What the HACS integration does today:
+
+- connects Home Assistant to a running SAWSUBE instance
+- exposes global SAWSUBE stats as sensors
+- exposes per-TV status as binary sensors
+- exposes common actions such as discovery, pairing, power on/off, and art mode on/off as buttons
+
+Important limitation:
+
+- the HACS integration is a companion to a running SAWSUBE backend, not a replacement for it
+- if you want Home Assistant to host SAWSUBE itself, use the App package in `sawsube/`
+- if you want Home Assistant to talk to an already running SAWSUBE server, use the HACS integration
+
+### Install with HACS
+
+1. Open HACS in Home Assistant.
+2. Add this repository as a custom repository.
+3. Choose the repository type `Integration`.
+4. Download `SAWSUBE`.
+5. Restart Home Assistant.
+6. Go to Settings -> Devices & Services -> Add Integration.
+7. Add `SAWSUBE` and enter the URL of your running SAWSUBE server.
+
 ---
 
 ## Features

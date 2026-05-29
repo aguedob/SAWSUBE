@@ -1,0 +1,16 @@
+{
+  "domain": "sawsube",
+  "name": "SAWSUBE",
+  "codeowners": [
+    "@WB2024"
+  ],
+  "config_flow": true,
+  "documentation": "https://github.com/WB2024/SAWSUBE",
+  "integration_type": "service",
+  "issue_tracker": "https://github.com/WB2024/SAWSUBE/issues",
+  "loggers": [
+    "custom_components.sawsube"
+  ],
+  "requirements": [],
+  "version": "0.1.0"
+}

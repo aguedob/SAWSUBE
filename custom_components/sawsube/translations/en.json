@@ -1,0 +1,84 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Connect to SAWSUBE",
+        "description": "Enter the URL for your SAWSUBE server.",
+        "data": {
+          "url": "SAWSUBE URL",
+          "verify_ssl": "Verify SSL certificate",
+          "update_interval": "Update interval (seconds)"
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "Failed to connect to SAWSUBE."
+    },
+    "abort": {
+      "already_configured": "This SAWSUBE server is already configured."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "SAWSUBE options",
+        "data": {
+          "update_interval": "Update interval (seconds)"
+        }
+      }
+    }
+  },
+  "entity": {
+    "sensor": {
+      "images": {
+        "name": "Images"
+      },
+      "tvs": {
+        "name": "TVs"
+      },
+      "images_on_tv": {
+        "name": "Images on TV"
+      },
+      "schedules_active": {
+        "name": "Active schedules"
+      },
+      "storage_bytes": {
+        "name": "Storage used"
+      },
+      "current_art": {
+        "name": "Current art"
+      }
+    },
+    "binary_sensor": {
+      "tv_online": {
+        "name": "Online"
+      },
+      "tv_artmode": {
+        "name": "Art mode"
+      },
+      "tv_paired": {
+        "name": "Paired"
+      }
+    },
+    "button": {
+      "discover_tvs": {
+        "name": "Discover TVs"
+      },
+      "pair_tv": {
+        "name": "Pair"
+      },
+      "power_on": {
+        "name": "Power on"
+      },
+      "power_off": {
+        "name": "Power off"
+      },
+      "artmode_on": {
+        "name": "Art mode on"
+      },
+      "artmode_off": {
+        "name": "Art mode off"
+      }
+    }
+  }
+}

@@ -1,0 +1,36 @@
+configuration:
+  tv_default_ip:
+    name: Default TV IP
+    description: Optional Samsung Frame TV IP address used as the initial default.
+  image_folder:
+    name: Image folder
+    description: Folder SAWSUBE watches and uses as its image library.
+  tv_resolution:
+    name: TV resolution
+    description: Output resolution used for processed artwork.
+  portrait_handling:
+    name: Portrait handling
+    description: How portrait and square artwork should be adapted for the TV.
+  unsplash_api_key:
+    name: Unsplash API key
+    description: Optional API key for Unsplash source browsing.
+  rijksmuseum_api_key:
+    name: Rijksmuseum API key
+    description: Optional API key for Rijksmuseum source browsing.
+  nasa_api_key:
+    name: NASA API key
+    description: Optional API key for NASA APOD browsing.
+  pexels_api_key:
+    name: Pexels API key
+    description: Optional API key for Pexels source browsing.
+  pixabay_api_key:
+    name: Pixabay API key
+    description: Optional API key for Pixabay source browsing.
+  openverse_client_id:
+    name: Openverse client ID
+    description: Optional client ID for Openverse browsing.
+  openverse_client_secret:
+    name: Openverse client secret
+    description: Optional client secret for Openverse browsing.
+network:
+  8000/tcp: SAWSUBE web interface

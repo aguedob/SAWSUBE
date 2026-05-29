@@ -1,0 +1,47 @@
+name: "SAWSUBE"
+version: "0.1.0"
+slug: "sawsube"
+description: "Samsung Frame TV art management for Home Assistant"
+url: "https://github.com/WB2024/SAWSUBE"
+# Set this to your published GHCR image after enabling the workflow:
+# image: "ghcr.io/<your-github-username>/sawsube-home-assistant"
+arch:
+  - aarch64
+  - amd64
+init: false
+startup: services
+boot: auto
+host_network: true
+panel_icon: mdi:television-ambient-light
+panel_title: SAWSUBE
+ports:
+  8000/tcp: 8000
+ports_description:
+  8000/tcp: SAWSUBE web interface
+map:
+  - type: share
+    read_only: false
+options:
+  tv_default_ip: ""
+  image_folder: "/data/images"
+  tv_resolution: "4K"
+  portrait_handling: "blur"
+  unsplash_api_key: ""
+  rijksmuseum_api_key: ""
+  nasa_api_key: ""
+  pexels_api_key: ""
+  pixabay_api_key: ""
+  openverse_client_id: ""
+  openverse_client_secret: ""
+schema:
+  tv_default_ip: str?
+  image_folder: str
+  tv_resolution: list(4K|1080p)
+  portrait_handling: list(blur|crop|skip)
+  unsplash_api_key: password?
+  rijksmuseum_api_key: password?
+  nasa_api_key: password?
+  pexels_api_key: password?
+  pixabay_api_key: password?
+  openverse_client_id: password?
+  openverse_client_secret: password?
