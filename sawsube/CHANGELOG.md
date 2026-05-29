@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.4
+
+- Fix sidebar logo asset path for Home Assistant ingress builds.
+
 ## 0.1.3
 
 - Fix frontend asset URLs for Home Assistant ingress by building with a relative Vite base path.
