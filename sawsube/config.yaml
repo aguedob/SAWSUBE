@@ -2,7 +2,7 @@ name: "SAWSUBE"
 version: "0.1.0"
 slug: "sawsube"
 description: "Samsung Frame TV art management for Home Assistant"
-url: "https://github.com/WB2024/SAWSUBE"
+url: "https://github.com/aguedob/SAWSUBE"
 # Set this to your published GHCR image after enabling the workflow:
 # image: "ghcr.io/<your-github-username>/sawsube-home-assistant"
 arch:

@@ -1,7 +1,7 @@
 ARG BUILD_ARCH
 FROM node:20-alpine AS frontend
 
-ARG SAWSUBE_GIT_URL="https://github.com/WB2024/SAWSUBE.git"
+ARG SAWSUBE_GIT_URL="https://github.com/aguedob/SAWSUBE.git"
 ARG SAWSUBE_GIT_REF="main"
 
 RUN apk add --no-cache git
@@ -16,7 +16,7 @@ FROM python:3.11-slim
 
 ARG BUILD_VERSION
 ARG BUILD_ARCH
-ARG SAWSUBE_GIT_URL="https://github.com/WB2024/SAWSUBE.git"
+ARG SAWSUBE_GIT_URL="https://github.com/aguedob/SAWSUBE.git"
 ARG SAWSUBE_GIT_REF="main"
 
 LABEL io.hass.version="${BUILD_VERSION}" \
