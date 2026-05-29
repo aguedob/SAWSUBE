@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { api, TV, TVImage, TVStatus } from '../lib/api'
+import { api, TV, TVImage, TVStatus, makeUrl } from '../lib/api'
 import { useToast } from '../components/Toast'
 
 export default function TVControl() {
@@ -152,10 +152,10 @@ function TVPanel({ tv }: { tv: TV }) {
           {tvImages.map((ti) => (
             <div key={ti.id} className="relative group shrink-0 flex flex-col gap-1">
               <div className="relative">
-                <img src={`/api/images/tv/${tv.id}/thumbnail/${ti.remote_id}`} alt=""
+                <img src={makeUrl(`/api/images/tv/${tv.id}/thumbnail/${ti.remote_id}`)} alt=""
                      className="w-32 h-20 object-cover rounded border border-border cursor-pointer"
                      onClick={() => api.post(`/api/tvs/${tv.id}/art/current`, { tv_image_id: ti.id })}
-                     onError={(e) => ((e.target as HTMLImageElement).src = `/api/images/${ti.image_id}/thumbnail`)} />
+                     onError={(e) => ((e.target as HTMLImageElement).src = makeUrl(`/api/images/${ti.image_id}/thumbnail`))} />
                 <button className="absolute top-1 right-1 btn-danger text-xs px-1 py-0.5 opacity-0 group-hover:opacity-100 [@media(hover:none)]:opacity-100"
                         onClick={() => api.del(`/api/images/${ti.image_id}/tv/${tv.id}`).then(refresh)}>×</button>
               </div>

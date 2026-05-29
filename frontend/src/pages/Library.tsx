@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, DragEvent } from 'react'
-import { api, Image, TV } from '../lib/api'
+import { api, Image, TV, makeUrl } from '../lib/api'
 import { useToast } from '../components/Toast'
 import { wsClient } from '../lib/ws'
 
@@ -133,7 +133,7 @@ export default function Library() {
       <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3">
         {images.map((img) => (
           <div key={img.id} className={`card overflow-hidden relative group ${selected.has(img.id) ? 'ring-2 ring-accent' : ''}`}>
-            <img src={`/api/images/${img.id}/thumbnail`} alt={img.filename} className="w-full aspect-[4/3] object-cover cursor-pointer"
+            <img src={makeUrl(`/api/images/${img.id}/thumbnail`)} alt={img.filename} className="w-full aspect-[4/3] object-cover cursor-pointer"
                  onClick={() => toggleSel(img.id)} />
             <div className="p-2 text-xs">
               <div className="truncate" title={img.filename}>{img.filename}</div>

@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.8
+
+- Fix library and TV thumbnail image URLs so they resolve through the Home Assistant ingress path.
+
 ## 0.1.7
 
 - Fix frontend API and WebSocket URL resolution so requests stay under the Home Assistant ingress path.

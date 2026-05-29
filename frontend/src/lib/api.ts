@@ -1,4 +1,4 @@
-function makeUrl(path: string): string {
+export function makeUrl(path: string): string {
   const normalized = path.replace(/^\//, '')
   const base = `${window.location.origin}${window.location.pathname.replace(/\/?$/, '/')}`
   return new URL(normalized, base).toString()
