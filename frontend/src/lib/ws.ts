@@ -1,9 +1,12 @@
 type Listener = (msg: any) => void
 
-function ingressBase(): string {
-  return location.pathname.startsWith('/app/')
-    ? location.pathname.replace(/\/$/, '')
-    : ''
+function wsUrl(path: string): string {
+  const proto = location.protocol === 'https:' ? 'wss:' : 'ws:'
+  const base = new URL(
+    `${location.pathname.replace(/\/?$/, '/')}${path.replace(/^\//, '')}`,
+    `${proto}//${location.host}`,
+  )
+  return base.toString()
 }
 
 class WSClient {
@@ -19,10 +22,7 @@ class WSClient {
     }
     this.connecting = true
     this.explicitClose = false
-    const proto = location.protocol === 'https:' ? 'wss' : 'ws'
-    const host = location.host
-    const base = ingressBase()
-    const ws = new WebSocket(`${proto}://${host}${base}/ws`)
+    const ws = new WebSocket(wsUrl('/ws'))
     this.ws = ws
     ws.onmessage = (e) => {
       try { this.listeners.forEach((l) => l(JSON.parse(e.data))) } catch { /* ignore */ }

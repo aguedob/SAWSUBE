@@ -1,15 +1,11 @@
-function ingressBase(): string {
-  const configured = (import.meta as any).env?.VITE_API_BASE
-  if (configured) return configured
-  return window.location.pathname.startsWith('/app/')
-    ? window.location.pathname.replace(/\/$/, '')
-    : ''
+function makeUrl(path: string): string {
+  const normalized = path.replace(/^\//, '')
+  const base = `${window.location.origin}${window.location.pathname.replace(/\/?$/, '/')}`
+  return new URL(normalized, base).toString()
 }
 
-const BASE = ingressBase()
-
 async function req<T>(path: string, init: RequestInit = {}): Promise<T> {
-  const r = await fetch(BASE + path, {
+  const r = await fetch(makeUrl(path), {
     headers: { 'Content-Type': 'application/json', ...(init.headers || {}) },
     ...init,
   })
@@ -32,7 +28,7 @@ export const api = {
   upload: async <T,>(p: string, files: File[]): Promise<T> => {
     const fd = new FormData()
     for (const f of files) fd.append('files', f)
-    const r = await fetch(BASE + p, { method: 'POST', body: fd })
+    const r = await fetch(makeUrl(p), { method: 'POST', body: fd })
     if (!r.ok) throw new Error(await r.text())
     return r.json()
   },

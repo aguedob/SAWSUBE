@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.7
+
+- Fix frontend API and WebSocket URL resolution so requests stay under the Home Assistant ingress path.
+
 ## 0.1.6
 
 - Fix sidebar logo path using a plain relative asset URL compatible with the current TypeScript and Vite setup.
