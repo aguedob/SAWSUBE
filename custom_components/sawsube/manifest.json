@@ -5,12 +5,12 @@
     "@WB2024"
   ],
   "config_flow": true,
-  "documentation": "https://github.com/WB2024/SAWSUBE",
+  "documentation": "https://github.com/aguedob/SAWSUBE",
   "integration_type": "service",
-  "issue_tracker": "https://github.com/WB2024/SAWSUBE/issues",
+  "issue_tracker": "https://github.com/aguedob/SAWSUBE/issues",
   "loggers": [
     "custom_components.sawsube"
   ],
   "requirements": [],
-  "version": "0.1.0"
+  "version": "0.1.1"
 }

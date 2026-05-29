@@ -3,10 +3,12 @@ FROM node:20-alpine AS frontend
 
 ARG SAWSUBE_GIT_URL="https://github.com/aguedob/SAWSUBE.git"
 ARG SAWSUBE_GIT_REF="main"
+ARG BUILD_VERSION="dev"
 
 RUN apk add --no-cache git
 WORKDIR /src
 RUN git clone --depth 1 --branch "${SAWSUBE_GIT_REF}" "${SAWSUBE_GIT_URL}" .
+RUN git rev-parse HEAD && echo "Building SAWSUBE version ${BUILD_VERSION}"
 
 WORKDIR /src/frontend
 RUN npm ci
