@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.1.2
+
+- Fix frontend routing for Home Assistant ingress by using hash-based routing.
+- Fix frontend API and WebSocket paths so they resolve through the app ingress path.
+
 ## 0.1.1
 
 - Fix Home Assistant app startup to use configurable port defaults.

@@ -1,4 +1,12 @@
-const BASE = (import.meta as any).env?.VITE_API_BASE ?? ''
+function ingressBase(): string {
+  const configured = (import.meta as any).env?.VITE_API_BASE
+  if (configured) return configured
+  return window.location.pathname.startsWith('/app/')
+    ? window.location.pathname.replace(/\/$/, '')
+    : ''
+}
+
+const BASE = ingressBase()
 
 async function req<T>(path: string, init: RequestInit = {}): Promise<T> {
   const r = await fetch(BASE + path, {
