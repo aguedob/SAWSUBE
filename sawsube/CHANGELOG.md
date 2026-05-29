@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.3
+
+- Fix frontend asset URLs for Home Assistant ingress by building with a relative Vite base path.
+
 ## 0.1.2
 
 - Fix frontend routing for Home Assistant ingress by using hash-based routing.
