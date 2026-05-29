@@ -2,7 +2,6 @@ import { NavLink, useLocation } from 'react-router-dom'
 import { useEffect, useState } from 'react'
 import { api, TV, TVStatus } from '../lib/api'
 import { useWS, useToggleTheme } from '../lib/hooks'
-import logoUrl from '../../public/Logo.png'
 
 const links = [
   ['/', 'Dashboard'],
@@ -65,7 +64,7 @@ export function Sidebar({ open, onClose }: { open: boolean; onClose: () => void 
       >✕</button>
       {/* Logo block — Canvas background matches logo's own background for perfect rendering */}
       <div style={{ background: '#F4F1ED', borderBottom: '3px solid #C8612A', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '14px 20px' }}>
-        <img src={logoUrl} alt="SAWSUBE" style={{ height: '38px', width: 'auto', display: 'block' }} />
+        <img src={`${import.meta.env.BASE_URL}Logo.png`} alt="SAWSUBE" style={{ height: '38px', width: 'auto', display: 'block' }} />
       </div>
 
       {/* Nav */}

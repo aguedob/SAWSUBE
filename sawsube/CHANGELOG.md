@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.5
+
+- Fix sidebar logo path without using a TypeScript image import, so Home Assistant frontend builds succeed.
+
 ## 0.1.4
 
 - Fix sidebar logo asset path for Home Assistant ingress builds.
