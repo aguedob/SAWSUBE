@@ -28,6 +28,9 @@ json_value() {
 }
 
 PORT="$(json_value 'app_port')"
+if [ -z "${PORT}" ] || [ "${PORT}" = "null" ]; then
+  PORT="8099"
+fi
 TV_DEFAULT_IP="$(json_value 'tv_default_ip')"
 IMAGE_FOLDER="$(json_value 'image_folder')"
 TV_RESOLUTION="$(json_value 'tv_resolution')"
