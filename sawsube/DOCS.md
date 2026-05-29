@@ -20,8 +20,20 @@ SAWSUBE provides a local web UI for Samsung Frame TVs:
 
 1. Add this repository to Home Assistant Apps.
 2. Install the `SAWSUBE` app.
-3. Review the options and adjust the image folder or API keys if needed.
+3. Review the options and adjust the app port, image folder, or API keys if needed.
 4. Start the app and open the web UI from the app page.
+
+## Startup troubleshooting
+
+If the app fails with `address already in use`, another service on the Home Assistant host is already using the selected port.
+
+Try this:
+
+1. Open the app configuration.
+2. Change `app_port` from `8099` to another free port such as `8100`.
+3. Save and restart the app.
+
+The first Home Assistant App package used `8000` by default. This package now defaults to `8099` to reduce collisions on systems that already use `8000`.
 
 ### Local build vs published image
 

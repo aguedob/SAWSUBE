@@ -14,14 +14,17 @@ boot: auto
 host_network: true
 panel_icon: mdi:television-ambient-light
 panel_title: SAWSUBE
+ingress: true
+ingress_port: 8099
 ports:
-  8000/tcp: 8000
+  8099/tcp: 8099
 ports_description:
-  8000/tcp: SAWSUBE web interface
+  8099/tcp: SAWSUBE web interface
 map:
   - type: share
     read_only: false
 options:
+  app_port: 8099
   tv_default_ip: ""
   image_folder: "/data/images"
   tv_resolution: "4K"
@@ -34,6 +37,7 @@ options:
   openverse_client_id: ""
   openverse_client_secret: ""
 schema:
+  app_port: port
   tv_default_ip: str?
   image_folder: str
   tv_resolution: list(4K|1080p)

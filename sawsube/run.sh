@@ -19,14 +19,15 @@ export PIXABAY_API_KEY
 export OPENVERSE_CLIENT_ID
 export OPENVERSE_CLIENT_SECRET
 export HOST="0.0.0.0"
-export PORT="8000"
-export SAWSUBE_URL="http://localhost:8000"
+export PORT
+export SAWSUBE_URL
 
 json_value() {
   local key="$1"
   jq -r --arg key "${key}" '.[$key] // empty' "${CONFIG_PATH}"
 }
 
+PORT="$(json_value 'app_port')"
 TV_DEFAULT_IP="$(json_value 'tv_default_ip')"
 IMAGE_FOLDER="$(json_value 'image_folder')"
 TV_RESOLUTION="$(json_value 'tv_resolution')"
@@ -38,6 +39,7 @@ PEXELS_API_KEY="$(json_value 'pexels_api_key')"
 PIXABAY_API_KEY="$(json_value 'pixabay_api_key')"
 OPENVERSE_CLIENT_ID="$(json_value 'openverse_client_id')"
 OPENVERSE_CLIENT_SECRET="$(json_value 'openverse_client_secret')"
+SAWSUBE_URL="http://localhost:${PORT}"
 
 mkdir -p \
   "${IMAGE_FOLDER}" \
