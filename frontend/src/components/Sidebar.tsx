@@ -64,7 +64,7 @@ export function Sidebar({ open, onClose }: { open: boolean; onClose: () => void 
       >✕</button>
       {/* Logo block — Canvas background matches logo's own background for perfect rendering */}
       <div style={{ background: '#F4F1ED', borderBottom: '3px solid #C8612A', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '14px 20px' }}>
-        <img src={`${import.meta.env.BASE_URL}Logo.png`} alt="SAWSUBE" style={{ height: '38px', width: 'auto', display: 'block' }} />
+        <img src="Logo.png" alt="SAWSUBE" style={{ height: '38px', width: 'auto', display: 'block' }} />
       </div>
 
       {/* Nav */}

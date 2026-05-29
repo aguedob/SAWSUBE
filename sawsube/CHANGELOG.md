@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.6
+
+- Fix sidebar logo path using a plain relative asset URL compatible with the current TypeScript and Vite setup.
+
 ## 0.1.5
 
 - Fix sidebar logo path without using a TypeScript image import, so Home Assistant frontend builds succeed.
