@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.17
+
+- Make The Met source use a gentler request pattern with explicit headers so searches are less likely to fail behind upstream protection layers.
+
 ## 0.1.16
 
 - Add The Metropolitan Museum of Art as a source, including search, import, and library source filtering support.

@@ -1,11 +1,13 @@
 from __future__ import annotations
 
-import asyncio
-
 import httpx
 
 SEARCH_URL = "https://collectionapi.metmuseum.org/public/collection/v1/search"
 OBJECT_URL = "https://collectionapi.metmuseum.org/public/collection/v1/objects/{object_id}"
+DEFAULT_HEADERS = {
+    "User-Agent": "SAWSUBE/1.0 (+https://github.com/aguedob/SAWSUBE)",
+    "Accept": "application/json",
+}
 
 
 def _normalize_object(payload: dict) -> dict | None:
@@ -41,22 +43,38 @@ async def search(query: str, per_page: int = 20) -> list[dict]:
         "hasImages": "true",
     }
 
-    async with httpx.AsyncClient(timeout=20.0, follow_redirects=True) as client:
+    async with httpx.AsyncClient(
+        timeout=20.0,
+        follow_redirects=True,
+        headers=DEFAULT_HEADERS,
+    ) as client:
         response = await client.get(SEARCH_URL, params=params)
         response.raise_for_status()
         payload = response.json()
         object_ids = (payload.get("objectIDs") or [])[: max(limit * 5, limit)]
         if not object_ids:
             return []
+        results: list[dict] = []
+        for object_id in object_ids:
+            try:
+                item = await _fetch_object(client, object_id)
+            except httpx.HTTPError:
+                continue
+            if item:
+                results.append(item)
+            if len(results) >= limit:
+                break
 
-        details = await asyncio.gather(
-            *(_fetch_object(client, object_id) for object_id in object_ids),
-            return_exceptions=True,
-        )
-
-    return [item for item in details if isinstance(item, dict)][:limit]
+    return results
 
 
 async def get(object_id: str) -> dict | None:
-    async with httpx.AsyncClient(timeout=20.0, follow_redirects=True) as client:
-        return await _fetch_object(client, object_id)
+    async with httpx.AsyncClient(
+        timeout=20.0,
+        follow_redirects=True,
+        headers=DEFAULT_HEADERS,
+    ) as client:
+        try:
+            return await _fetch_object(client, object_id)
+        except httpx.HTTPError:
+            return None
