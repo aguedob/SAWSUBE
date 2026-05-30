@@ -1,18 +1,32 @@
 import { NavLink, useLocation } from 'react-router-dom'
 import { useEffect, useState } from 'react'
+import {
+  faBolt,
+  faCalendarDays,
+  faCompass,
+  faDisplay,
+  faFilm,
+  faGear,
+  faImage,
+  faSliders,
+  faTelevision,
+  faWandMagicSparkles,
+  faXmark,
+} from '@fortawesome/free-solid-svg-icons'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { api, TV, TVStatus } from '../lib/api'
 import { useWS } from '../lib/hooks'
 
 const links = [
-  ['/', 'Dashboard'],
-  ['/library', 'Library'],
-  ['/tv', 'TV Control'],
-  ['/discover', 'Discover'],
-  ['/sources', 'Sources'],
-  ['/schedules', 'Schedules'],
-  ['/settings', 'Settings'],
-  ['/tizenbrew', 'TizenBrew'],
-  ['/debloat', 'Debloat'],
+  ['/', 'Dashboard', faDisplay],
+  ['/library', 'Library', faImage],
+  ['/tv', 'TV Control', faTelevision],
+  ['/discover', 'Discover', faCompass],
+  ['/sources', 'Sources', faFilm],
+  ['/schedules', 'Schedules', faCalendarDays],
+  ['/settings', 'Settings', faSliders],
+  ['/tizenbrew', 'TizenBrew', faWandMagicSparkles],
+  ['/debloat', 'Debloat', faBolt],
 ] as const
 
 export function Sidebar({ open, onClose }: { open: boolean; onClose: () => void }) {
@@ -60,7 +74,7 @@ export function Sidebar({ open, onClose }: { open: boolean; onClose: () => void 
         onClick={onClose}
         aria-label="Close menu"
         style={{ color: 'rgb(var(--sidebar-muted))', background: 'none', border: 'none', cursor: 'pointer', fontSize: '18px', lineHeight: 1, padding: '4px' }}
-      >✕</button>
+      ><FontAwesomeIcon icon={faXmark} /></button>
       {/* Logo block — Canvas background matches logo's own background for perfect rendering */}
       <div style={{ background: 'rgb(var(--bg))', borderBottom: '3px solid rgb(var(--accent))', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '14px 20px' }}>
         <img src="Logo.png" alt="SAWSUBE" style={{ height: '38px', width: 'auto', display: 'block' }} />
@@ -68,10 +82,13 @@ export function Sidebar({ open, onClose }: { open: boolean; onClose: () => void 
 
       {/* Nav */}
       <nav className="flex-1 px-3 py-3 flex flex-col gap-1">
-        {links.map(([to, label]) => (
+        {links.map(([to, label, icon]) => (
           <NavLink key={to} to={to} end={to === '/'}
             className={({ isActive }) => isActive ? 'sawsube-nav-active' : 'sawsube-nav-item'}>
-            {label}
+            <span className="inline-flex items-center gap-3">
+              <FontAwesomeIcon icon={icon} className="w-4" />
+              <span>{label}</span>
+            </span>
           </NavLink>
         ))}
       </nav>
@@ -94,7 +111,7 @@ export function Sidebar({ open, onClose }: { open: boolean; onClose: () => void 
 
       {/* Footer */}
       <div style={{ borderTop: '1px solid rgb(var(--sidebar-border))', color: 'rgb(var(--sidebar-muted))', fontSize: '11px', fontFamily: 'var(--font-body)', padding: '10px 20px' }}>
-        SAWSUBE · by WB
+        <span className="inline-flex items-center gap-2"><FontAwesomeIcon icon={faGear} />SAWSUBE · by WB</span>
       </div>
     </aside>
   )

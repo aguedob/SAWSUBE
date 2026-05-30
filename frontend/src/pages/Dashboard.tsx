@@ -1,5 +1,9 @@
 import { useEffect, useState } from 'react'
+import { faArrowsRotate, faForward, faImage, faPalette, faPowerOff } from '@fortawesome/free-solid-svg-icons'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { api, TV, TVStatus } from '../lib/api'
+import { IconLabel } from '../components/IconLabel'
+import { LoadingInline, LoadingMessage } from '../components/Loading'
 import { useWS } from '../lib/hooks'
 
 export default function Dashboard() {
@@ -44,7 +48,7 @@ export default function Dashboard() {
     <div className="space-y-6">
       <h1 className="text-2xl">Dashboard</h1>
       {loading && (
-        <div className="card p-4 text-sm text-muted">Loading dashboard…</div>
+        <LoadingMessage text="Loading dashboard…" />
       )}
       {!loading && stats && (
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
@@ -75,10 +79,10 @@ export default function Dashboard() {
                 <div className="text-xs text-muted">Now showing: <span className="text-fg">{st.current}</span></div>
               )}
               <div className="flex gap-2 flex-wrap">
-                <button className="btn-primary" onClick={() => next(t.id)}>Next image</button>
-                <button className="btn-ghost" onClick={() => api.post(`/api/tvs/${t.id}/artmode/on`)}>Art Mode On</button>
-                <button className="btn-ghost" onClick={() => api.post(`/api/tvs/${t.id}/artmode/off`)}>Art Mode Off</button>
-                <button className="btn-ghost" onClick={refresh}>Refresh</button>
+                <button className="btn-primary" onClick={() => next(t.id)}><IconLabel icon={faForward}>Next image</IconLabel></button>
+                <button className="btn-ghost" onClick={() => api.post(`/api/tvs/${t.id}/artmode/on`)}><IconLabel icon={faPalette}>Art Mode On</IconLabel></button>
+                <button className="btn-ghost" onClick={() => api.post(`/api/tvs/${t.id}/artmode/off`)}><IconLabel icon={faPowerOff}>Art Mode Off</IconLabel></button>
+                <button className="btn-ghost" onClick={refresh}><IconLabel icon={faArrowsRotate}>Refresh</IconLabel></button>
               </div>
             </div>
           )
@@ -87,7 +91,7 @@ export default function Dashboard() {
       <div className="card p-4">
         <div className="font-semibold mb-2">Recent history</div>
         <div className="text-sm space-y-1 max-h-64 overflow-auto">
-          {loading && <div className="text-muted">Loading recent history…</div>}
+          {loading && <LoadingInline text="Loading recent history…" />}
           {history.map((h) => (
             <div key={h.id} className="flex justify-between text-muted">
               <span>TV {h.tv_id} · image {h.image_id}</span>
@@ -104,7 +108,7 @@ export default function Dashboard() {
 function Stat({ label, value }: { label: string; value: any }) {
   return (
     <div className="card p-4">
-      <div className="text-xs text-muted">{label}</div>
+      <div className="text-xs text-muted inline-flex items-center gap-2">{label === 'Images' && <FontAwesomeIcon icon={faImage} />}{label}</div>
       <div className="text-2xl font-bold">{value ?? '—'}</div>
     </div>
   )

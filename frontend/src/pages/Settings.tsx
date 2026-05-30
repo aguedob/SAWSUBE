@@ -1,6 +1,9 @@
 import { useEffect, useState } from 'react'
+import { faFloppyDisk, faFolderPlus, faFolderTree, faTrash, faWandMagicSparkles } from '@fortawesome/free-solid-svg-icons'
 import { api, Folder, TV } from '../lib/api'
 import { useToast } from '../components/Toast'
+import { IconLabel } from '../components/IconLabel'
+import { LoadingInline } from '../components/Loading'
 import { ThemeMode, useTheme } from '../lib/hooks'
 
 export default function Settings() {
@@ -51,16 +54,16 @@ export default function Settings() {
       <Section title="Watch folders">
         <div className="flex gap-2">
           <input className="input" placeholder="/path/to/folder" value={newPath} onChange={(e) => setNewPath(e.target.value)} />
-          <button className="btn-primary" onClick={addFolder}>Add</button>
+          <button className="btn-primary" onClick={addFolder}><IconLabel icon={faFolderPlus}>Add</IconLabel></button>
         </div>
         <div className="space-y-1 mt-3">
-          {loading && <div className="text-muted text-sm">Loading watch folders…</div>}
+          {loading && <LoadingInline text="Loading watch folders…" />}
           {folders.map((f) => (
             <div key={f.id} className="flex justify-between items-center text-sm border border-border rounded px-3 py-2">
               <span className="truncate">{f.path}</span>
               <div className="flex gap-2">
-                <button className="btn-ghost" onClick={() => api.post(`/api/sources/folders/${f.id}/scan`).then((r: any) => t.push({ type: 'success', text: `Scanned: ${r.added} new` }))}>Scan now</button>
-                <button className="btn-danger" onClick={() => api.del(`/api/sources/folders/${f.id}`).then(load)}>Remove</button>
+                <button className="btn-ghost" onClick={() => api.post(`/api/sources/folders/${f.id}/scan`).then((r: any) => t.push({ type: 'success', text: `Scanned: ${r.added} new` }))}><IconLabel icon={faFolderTree}>Scan now</IconLabel></button>
+                <button className="btn-danger" onClick={() => api.del(`/api/sources/folders/${f.id}`).then(load)}><IconLabel icon={faTrash}>Remove</IconLabel></button>
               </div>
             </div>
           ))}
@@ -69,7 +72,7 @@ export default function Settings() {
       </Section>
 
       <Section title="TVs">
-        {loading && <div className="text-muted text-sm">Loading registered TVs…</div>}
+        {loading && <LoadingInline text="Loading registered TVs…" />}
         {tvs.map((t) => (
           <div key={t.id} className="flex flex-col gap-2 py-2 border-b last:border-b-0 border-border">
             <div className="text-sm text-muted">{t.ip} · {t.mac || 'no MAC'}</div>
@@ -79,8 +82,8 @@ export default function Settings() {
                 value={tvNames[t.id] ?? ''}
                 onChange={(e) => setTvNames((prev) => ({ ...prev, [t.id]: e.target.value }))}
               />
-              <button className="btn-primary" disabled={!(tvNames[t.id] ?? '').trim() || (tvNames[t.id] ?? '').trim() === t.name} onClick={() => renameTv(t)}>Save</button>
-              <button className="btn-danger" onClick={() => confirm('Remove TV?') && api.del(`/api/tvs/${t.id}`).then(load)}>Remove</button>
+              <button className="btn-primary" disabled={!(tvNames[t.id] ?? '').trim() || (tvNames[t.id] ?? '').trim() === t.name} onClick={() => renameTv(t)}><IconLabel icon={faFloppyDisk}>Save</IconLabel></button>
+              <button className="btn-danger" onClick={() => confirm('Remove TV?') && api.del(`/api/tvs/${t.id}`).then(load)}><IconLabel icon={faTrash}>Remove</IconLabel></button>
             </div>
           </div>
         ))}
@@ -125,7 +128,7 @@ export default function Settings() {
             for (const it of items) await api.del(`/api/images/${it.image_id}/tv/${tv.id}`)
           }
           t.push({ type: 'success', text: 'Done' })
-        }}>Wipe all art from TVs</button>
+        }}><IconLabel icon={faWandMagicSparkles}>Wipe all art from TVs</IconLabel></button>
       </Section>
     </div>
   )

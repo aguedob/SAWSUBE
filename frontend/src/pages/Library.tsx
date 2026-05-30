@@ -1,5 +1,9 @@
 import { useEffect, useRef, useState, DragEvent } from 'react'
+import { faSpinner, faTrash, faTag, faUpload } from '@fortawesome/free-solid-svg-icons'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { api, Image, TV, makeUrl } from '../lib/api'
+import { IconLabel } from '../components/IconLabel'
+import { LoadingMessage } from '../components/Loading'
 import { useToast } from '../components/Toast'
 import { wsClient } from '../lib/ws'
 
@@ -120,7 +124,7 @@ export default function Library() {
           </select>
           <input className="input w-24 min-w-0" placeholder="Tag" value={filter.tag} onChange={(e) => setFilter({ ...filter, tag: e.target.value })} />
           <label className="flex items-center gap-1 text-sm"><input type="checkbox" checked={filter.favourite} onChange={(e) => setFilter({ ...filter, favourite: e.target.checked })} /> Fav</label>
-          <button className="btn-primary" onClick={() => fileRef.current?.click()}>Upload</button>
+          <button className="btn-primary" onClick={() => fileRef.current?.click()}><IconLabel icon={faUpload}>Upload</IconLabel></button>
           <input ref={fileRef} type="file" multiple className="hidden" accept="image/*" onChange={(e) => e.target.files && upload(e.target.files)} />
           <select className="input min-w-0" disabled={syncing !== null || loadingTvs}
             onChange={(e) => { if (e.target.value) { syncAllTo(Number(e.target.value)); e.target.value = '' } }} defaultValue="">
@@ -137,13 +141,13 @@ export default function Library() {
             <option value="">{loadingTvs ? 'Loading TVs…' : 'Send all to TV…'}</option>
             {tvs.map((t) => <option key={t.id} value={t.id}>{t.name}</option>)}
           </select>
-          <button className="btn-danger" onClick={bulkDelete}>Delete selected</button>
+          <button className="btn-danger" onClick={bulkDelete}><IconLabel icon={faTrash}>Delete selected</IconLabel></button>
           <button className="btn-ghost" onClick={() => setSelected(new Set())}>Clear</button>
         </div>
       )}
 
       {loading && (
-        <div className="card p-4 text-sm text-muted">Loading library images…</div>
+        <LoadingMessage text="Loading library images…" />
       )}
 
       {!loading && images.length === 0 && (
@@ -168,11 +172,11 @@ export default function Library() {
                 {tvs.map((t) => <option key={t.id} value={t.id}>{t.name}</option>)}
               </select>
               <div className="flex gap-1">
-                <button className="btn-danger text-xs flex-1" onClick={() => del(img.id)}>Del</button>
+                <button className="btn-danger text-xs flex-1" onClick={() => del(img.id)}><IconLabel icon={faTrash}>Del</IconLabel></button>
                 <button className="btn-ghost text-xs flex-1" onClick={() => {
                   const t = prompt('Tags (comma)', img.tags || '')
                   if (t !== null) api.put(`/api/images/${img.id}/tags`, { tags: t }).then(load)
-                }}>Tag</button>
+                }}><IconLabel icon={faTag}>Tag</IconLabel></button>
               </div>
             </div>
           </div>
@@ -181,14 +185,14 @@ export default function Library() {
 
       {uploading.length > 0 && (
         <div className="fixed bottom-4 left-4 card p-3 space-y-2 w-72 z-40">
-          <div className="text-sm font-semibold">Uploading…</div>
+          <div className="text-sm font-semibold inline-flex items-center gap-2"><FontAwesomeIcon icon={faSpinner} spin />Uploading…</div>
           {uploading.map((u, i) => <div key={i} className="text-xs truncate">{u.name}</div>)}
         </div>
       )}
 
       {syncing && (
         <div className="fixed bottom-4 right-4 card p-3 w-72 sm:w-80 max-w-[calc(100vw-2rem)] z-40 space-y-2">
-          <div className="text-sm font-semibold">Syncing to TV… {syncing.done}/{syncing.total}</div>
+          <div className="text-sm font-semibold inline-flex items-center gap-2"><FontAwesomeIcon icon={faSpinner} spin />Syncing to TV… {syncing.done}/{syncing.total}</div>
           <div className="w-full bg-surface rounded-full h-2 overflow-hidden">
             <div className="bg-accent h-2 rounded-full transition-all"
                  style={{ width: `${syncing.total > 0 ? (syncing.done / syncing.total) * 100 : 0}%` }} />

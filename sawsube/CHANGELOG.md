@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.1.13
+
+- Add Font Awesome icons to the sidebar and common action buttons.
+- Replace plain loading text with spinner-based loading components.
+
 ## 0.1.12
 
 - Add clearer loading states to Dashboard, Library, and Settings so empty or incorrect-looking content is not shown while data is still loading.
