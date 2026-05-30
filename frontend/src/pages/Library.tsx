@@ -120,7 +120,7 @@ export default function Library() {
           <input className="input w-40 min-w-0" placeholder="Search filename" value={filter.q} onChange={(e) => setFilter({ ...filter, q: e.target.value })} />
           <select className="input w-32 min-w-0" value={filter.source} onChange={(e) => setFilter({ ...filter, source: e.target.value })}>
             <option value="">All sources</option>
-            <option>local</option><option>unsplash</option><option>nasa</option><option>rijksmuseum</option><option>reddit</option><option>pexels</option><option>pixabay</option>
+            <option>local</option><option>unsplash</option><option>nasa</option><option>rijksmuseum</option><option>metmuseum</option><option>reddit</option><option>pexels</option><option>pixabay</option><option>openverse</option>
           </select>
           <input className="input w-24 min-w-0" placeholder="Tag" value={filter.tag} onChange={(e) => setFilter({ ...filter, tag: e.target.value })} />
           <label className="flex items-center gap-1 text-sm"><input type="checkbox" checked={filter.favourite} onChange={(e) => setFilter({ ...filter, favourite: e.target.checked })} /> Fav</label>

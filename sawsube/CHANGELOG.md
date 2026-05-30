@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.16
+
+- Add The Metropolitan Museum of Art as a source, including search, import, and library source filtering support.
+
 ## 0.1.15
 
 - Migrate Rijksmuseum search and import to the current Data Services APIs so searches no longer fail with a 500 error.

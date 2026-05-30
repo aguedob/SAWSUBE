@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { api } from '../lib/api'
 import { useToast } from '../components/Toast'
 
-const TABS = ['Unsplash', 'NASA APOD', 'Rijksmuseum', 'Reddit', 'Reddit Gallery', 'Pexels', 'Pixabay', 'Openverse'] as const
+const TABS = ['Unsplash', 'NASA APOD', 'Rijksmuseum', 'The Met', 'Reddit', 'Reddit Gallery', 'Pexels', 'Pixabay', 'Openverse'] as const
 type Tab = typeof TABS[number]
 
 export default function Sources() {
@@ -19,6 +19,7 @@ export default function Sources() {
       {tab === 'Unsplash' && <Unsplash />}
       {tab === 'NASA APOD' && <Nasa />}
       {tab === 'Rijksmuseum' && <Rijks />}
+      {tab === 'The Met' && <MetMuseum />}
       {tab === 'Reddit' && <Reddit />}
       {tab === 'Reddit Gallery' && <RedditGallery />}
       {tab === 'Pexels' && <Pexels />}
@@ -102,6 +103,29 @@ function Rijks() {
       </div>
       <Grid items={items} onImport={async (it) => {
         try { await api.post('/api/sources/rijksmuseum/import', { id: it.id }); t.push({ type: 'success', text: 'Imported' }) }
+        catch (e: any) { t.push({ type: 'error', text: e.message }) }
+      }} />
+    </div>
+  )
+}
+
+function MetMuseum() {
+  const [q, setQ] = useState('monet')
+  const [items, setItems] = useState<any[]>([])
+  const t = useToast()
+  const search = async () => {
+    try { setItems(await api.get(`/api/sources/metmuseum/search?q=${encodeURIComponent(q)}`)) }
+    catch (e: any) { t.push({ type: 'error', text: e.message }) }
+  }
+  return (
+    <div className="space-y-3">
+      <p className="text-sm text-muted">Searches The Metropolitan Museum of Art’s public domain collection. No API key required.</p>
+      <div className="flex gap-2">
+        <input className="input" value={q} onChange={(e) => setQ(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && search()} />
+        <button className="btn-primary" onClick={search}>Search</button>
+      </div>
+      <Grid items={items} onImport={async (it) => {
+        try { await api.post('/api/sources/metmuseum/import', { id: it.id }); t.push({ type: 'success', text: 'Imported' }) }
         catch (e: any) { t.push({ type: 'error', text: e.message }) }
       }} />
     </div>

@@ -45,6 +45,20 @@ async def test_unsplash_import_requires_id(app_client):
     assert r.status_code == 400
 
 
+async def test_metmuseum_search_mocked(app_client):
+    fake = [{"id": "436121", "url": "https://images.metmuseum.org/example.jpg"}]
+    with patch("backend.routers.sources.metmuseum.search",
+               new=AsyncMock(return_value=fake)):
+        r = await app_client.get("/api/sources/metmuseum/search?q=degas")
+        assert r.status_code == 200
+        assert r.json() == fake
+
+
+async def test_metmuseum_import_requires_id(app_client):
+    r = await app_client.post("/api/sources/metmuseum/import", json={})
+    assert r.status_code == 400
+
+
 async def test_nasa_apod_no_image(app_client):
     with patch("backend.routers.sources.nasa_apod.today",
                new=AsyncMock(return_value={"unsupported": True})):
