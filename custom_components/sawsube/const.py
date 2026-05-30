@@ -4,7 +4,7 @@ from __future__ import annotations
 
 DOMAIN = "sawsube"
 NAME = "SAWSUBE"
-VERSION = "0.1.14"
+VERSION = "0.1.15"
 
 CONF_URL = "url"
 CONF_VERIFY_SSL = "verify_ssl"

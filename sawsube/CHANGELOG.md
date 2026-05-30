@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.15
+
+- Migrate Rijksmuseum search and import to the current Data Services APIs so searches no longer fail with a 500 error.
+
 ## 0.1.14
 
 - Remove the hard requirement for a Rijksmuseum API key and allow SAWSUBE to try Rijksmuseum requests without one.
