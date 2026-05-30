@@ -12,6 +12,12 @@
   --card:   234 230 225;   /* Linen    #EAE6E1 */
   --border: 216 211 205;   /* Chalk    #D8D3CD */
   --accent: 200 97 42;     /* Ember    #C8612A */
+  --sidebar-bg: 234 230 225;
+  --sidebar-muted: 107 101 96;
+  --sidebar-border: 216 211 205;
+  --sidebar-hover: 244 241 237;
+  --sidebar-active: 226 220 214;
+  --sidebar-fg: 26 26 26;
   --font-heading: 'DM Serif Display', serif;
   --font-body:    'DM Sans', sans-serif;
   --font-mono:    'JetBrains Mono', monospace;
@@ -24,6 +30,12 @@
   --card:   30 42 53;      /* Slate    #1E2A35 */
   --border: 46 61 77;      /* #2E3D4D */
   --accent: 200 97 42;     /* Ember stays */
+  --sidebar-bg: 15 25 35;
+  --sidebar-muted: 160 152 144;
+  --sidebar-border: 30 42 53;
+  --sidebar-hover: 26 38 50;
+  --sidebar-active: 30 42 53;
+  --sidebar-fg: 244 241 237;
 }
 
 html, body, #root { height: 100%; }
@@ -54,13 +66,13 @@ code, pre { font-family: var(--font-mono); }
 /* ── SAWSUBE Sidebar nav ── */
 .sawsube-nav-item {
   display: block; padding: 8px 12px; border-radius: 6px;
-  font-family: var(--font-body); font-size: 14px; color: #A09890;
+  font-family: var(--font-body); font-size: 14px; color: rgb(var(--sidebar-muted));
   transition: background 150ms, color 150ms; text-decoration: none;
 }
-.sawsube-nav-item:hover { background: #1A2632; color: #F4F1ED; }
+.sawsube-nav-item:hover { background: rgb(var(--sidebar-hover)); color: rgb(var(--sidebar-fg)); }
 .sawsube-nav-active {
   display: block; padding: 8px 12px; border-radius: 6px;
   font-family: var(--font-body); font-size: 14px;
-  background: #1E2A35; color: #F4F1ED; border-left: 3px solid #C8612A;
+  background: rgb(var(--sidebar-active)); color: rgb(var(--sidebar-fg)); border-left: 3px solid rgb(var(--accent));
   text-decoration: none;
 }

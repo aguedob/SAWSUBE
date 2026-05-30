@@ -1,7 +1,7 @@
 /// <reference lib="dom" />
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { renderHook, act } from '@testing-library/react'
-import { useWS, useToggleTheme } from './hooks'
+import { useWS, useTheme } from './hooks'
 import { wsClient } from './ws'
 
 describe('useWS', () => {
@@ -37,19 +37,27 @@ describe('useWS', () => {
   })
 })
 
-describe('useToggleTheme', () => {
+describe('useTheme', () => {
   beforeEach(() => {
     document.documentElement.classList.remove('dark')
     localStorage.clear()
+    vi.stubGlobal('matchMedia', vi.fn().mockImplementation(() => ({
+      matches: false,
+      addEventListener: vi.fn(),
+      removeEventListener: vi.fn(),
+    })))
   })
 
-  it('toggles dark class on <html>', () => {
-    const { result } = renderHook(() => useToggleTheme())
-    expect(result.current.dark).toBe(false)
-    act(() => result.current.toggle())
+  it('stores and applies explicit theme selection', () => {
+    const { result } = renderHook(() => useTheme())
+    expect(result.current.theme).toBe('auto')
+    expect(result.current.resolvedTheme).toBe('light')
+
+    act(() => result.current.setTheme('dark'))
     expect(document.documentElement.classList.contains('dark')).toBe(true)
     expect(localStorage.getItem('theme')).toBe('dark')
-    act(() => result.current.toggle())
+
+    act(() => result.current.setTheme('light'))
     expect(document.documentElement.classList.contains('dark')).toBe(false)
     expect(localStorage.getItem('theme')).toBe('light')
   })

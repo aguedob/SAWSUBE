@@ -1,12 +1,14 @@
 import { useEffect, useState } from 'react'
 import { api, Folder, TV } from '../lib/api'
 import { useToast } from '../components/Toast'
+import { ThemeMode, useTheme } from '../lib/hooks'
 
 export default function Settings() {
   const [folders, setFolders] = useState<Folder[]>([])
   const [newPath, setNewPath] = useState('')
   const [tvs, setTvs] = useState<TV[]>([])
   const t = useToast()
+  const { theme, setTheme } = useTheme()
 
   const load = async () => {
     setFolders(await api.get<Folder[]>('/api/sources/folders'))
@@ -50,6 +52,21 @@ export default function Settings() {
             <button className="btn-danger" onClick={() => confirm('Remove TV?') && api.del(`/api/tvs/${t.id}`).then(load)}>Remove</button>
           </div>
         ))}
+      </Section>
+
+      <Section title="Theme">
+        <div className="space-y-2">
+          <div className="text-sm text-muted">Choose how SAWSUBE should follow your preferred appearance.</div>
+          <select
+            className="input max-w-xs"
+            value={theme}
+            onChange={(e) => setTheme(e.target.value as ThemeMode)}
+          >
+            <option value="light">Light</option>
+            <option value="dark">Dark</option>
+            <option value="auto">Auto (browser/system)</option>
+          </select>
+        </div>
       </Section>
 
       <Section title="Environment notes">

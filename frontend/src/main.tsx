@@ -5,8 +5,9 @@ import App from './App'
 import './index.css'
 
 const stored = localStorage.getItem('theme')
-if (stored === 'light') document.documentElement.classList.remove('dark')
-else document.documentElement.classList.add('dark')
+const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches
+const shouldUseDark = stored === 'dark' || ((stored === 'auto' || !stored) && prefersDark)
+document.documentElement.classList.toggle('dark', shouldUseDark)
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>

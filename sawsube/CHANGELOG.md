@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.1.10
+
+- Move theme selection into Settings with `light`, `dark`, and `auto` modes.
+- Make the sidebar follow the active theme instead of always rendering dark.
+
 ## 0.1.9
 
 - Make Samsung TV status polling fail fast for unreachable/off TVs and report them as offline instead of hanging the UI.
