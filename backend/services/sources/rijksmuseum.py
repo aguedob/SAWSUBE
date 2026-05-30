@@ -4,14 +4,13 @@ from ...config import settings
 
 
 async def search(query: str, per_page: int = 20) -> list[dict]:
-    if not settings.RIJKSMUSEUM_API_KEY:
-        return []
     url = "https://www.rijksmuseum.nl/api/en/collection"
     params = {
-        "key": settings.RIJKSMUSEUM_API_KEY,
         "q": query, "ps": per_page,
         "imgonly": "True", "toppieces": "True",
     }
+    if settings.RIJKSMUSEUM_API_KEY:
+        params["key"] = settings.RIJKSMUSEUM_API_KEY
     async with httpx.AsyncClient(timeout=15.0) as c:
         r = await c.get(url, params=params)
         r.raise_for_status()
@@ -33,10 +32,10 @@ async def search(query: str, per_page: int = 20) -> list[dict]:
 
 
 async def get(object_number: str) -> dict | None:
-    if not settings.RIJKSMUSEUM_API_KEY:
-        return None
     url = f"https://www.rijksmuseum.nl/api/en/collection/{object_number}"
-    params = {"key": settings.RIJKSMUSEUM_API_KEY}
+    params = {}
+    if settings.RIJKSMUSEUM_API_KEY:
+        params["key"] = settings.RIJKSMUSEUM_API_KEY
     async with httpx.AsyncClient(timeout=15.0) as c:
         r = await c.get(url, params=params)
         if r.status_code != 200:

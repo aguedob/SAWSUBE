@@ -113,7 +113,6 @@ export default function Settings() {
         </p>
         <ul className="text-xs text-muted list-disc pl-5 space-y-0.5">
           <li>UNSPLASH_API_KEY</li>
-          <li>RIJKSMUSEUM_API_KEY</li>
           <li>TV_RESOLUTION (4K | 1080p)</li>
           <li>PORTRAIT_HANDLING (blur | crop | skip)</li>
           <li>IMAGE_FOLDER (downloaded source images)</li>

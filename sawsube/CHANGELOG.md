@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.14
+
+- Remove the hard requirement for a Rijksmuseum API key and allow SAWSUBE to try Rijksmuseum requests without one.
+
 ## 0.1.13
 
 - Add Font Awesome icons to the sidebar and common action buttons.
