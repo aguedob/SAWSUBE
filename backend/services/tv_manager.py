@@ -13,6 +13,9 @@ from .ws_manager import ws_manager
 
 log = logging.getLogger(__name__)
 
+TV_CONNECT_TIMEOUT_SECS = 3.0
+TV_STATUS_TIMEOUT_SECS = 5.0
+
 # samsungtvws (NickWaterton fork) optional import — guarded so app still boots
 # even if user hasn't installed deps yet.
 try:
@@ -59,7 +62,11 @@ class TVConnection:
         async with self.lock:
             if self.art is None:
                 self.art = SamsungTVAsyncArt(
-                    host=self.ip, port=self.port, token_file=self.token_file, name=self.name or "SAWSUBE"
+                    host=self.ip,
+                    port=self.port,
+                    token_file=self.token_file,
+                    name=self.name or "SAWSUBE",
+                    timeout=TV_CONNECT_TIMEOUT_SECS,
                 )
                 try:
                     await self.art.start_listening()
@@ -76,7 +83,11 @@ class TVConnection:
         async with self.lock:
             if self.remote is None:
                 self.remote = SamsungTVWSAsyncRemote(
-                    host=self.ip, port=self.port, token_file=self.token_file, name=self.name or "SAWSUBE"
+                    host=self.ip,
+                    port=self.port,
+                    token_file=self.token_file,
+                    name=self.name or "SAWSUBE",
+                    timeout=TV_CONNECT_TIMEOUT_SECS,
                 )
                 try:
                     await self.remote.start_listening()
@@ -187,22 +198,32 @@ class TVManager:
                 return {"online": False, "artmode": None, "current": None}
             conn = await self.get(tv)
             try:
-                art = await conn._ensure_art()
-                artmode = await art.get_artmode()
-                current = None
-                try:
-                    cur = await art.get_current()
-                    current = cur.get("content_id") if isinstance(cur, dict) else None
-                except Exception:
-                    pass
+                async def _read_status() -> dict[str, Any]:
+                    art = await conn._ensure_art()
+                    artmode = await art.get_artmode()
+                    current = None
+                    try:
+                        cur = await art.get_current()
+                        current = cur.get("content_id") if isinstance(cur, dict) else None
+                    except Exception:
+                        pass
+                    return {
+                        "online": True,
+                        "artmode": (artmode == "on" or artmode is True),
+                        "current": current,
+                    }
+
+                status = await asyncio.wait_for(_read_status(), timeout=TV_STATUS_TIMEOUT_SECS)
                 tv.last_seen = datetime.utcnow()
                 await s.commit()
-                return {"online": True, "artmode": (artmode == "on" or artmode is True),
-                        "current": current}
+                conn.last_status = status
+                return status
             except Exception as e:
                 log.warning("fetch_status tv %s failed, resetting connection: %s", tv_id, e, exc_info=True)
-                conn.art = None  # force reconnect on next call
-                return {"online": False, "artmode": None, "current": None, "error": str(e)}
+                await conn.reset_connection()
+                status = {"online": False, "artmode": None, "current": None, "error": str(e)}
+                conn.last_status = status
+                return status
 
     # ── High-level operations ────────────────────────────────────────────────
     async def pair(self, tv: TV) -> bool:

@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.9
+
+- Make Samsung TV status polling fail fast for unreachable/off TVs and report them as offline instead of hanging the UI.
+
 ## 0.1.8
 
 - Fix library and TV thumbnail image URLs so they resolve through the Home Assistant ingress path.
