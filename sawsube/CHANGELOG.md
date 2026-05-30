@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.12
+
+- Add clearer loading states to Dashboard, Library, and Settings so empty or incorrect-looking content is not shown while data is still loading.
+
 ## 0.1.11
 
 - Add TV rename support in Settings so registered TVs can be renamed without deleting and re-adding them.

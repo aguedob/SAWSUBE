@@ -6,6 +6,8 @@ import { wsClient } from '../lib/ws'
 export default function Library() {
   const [images, setImages] = useState<Image[]>([])
   const [tvs, setTvs] = useState<TV[]>([])
+  const [loading, setLoading] = useState(true)
+  const [loadingTvs, setLoadingTvs] = useState(true)
   const [filter, setFilter] = useState({ source: '', tag: '', favourite: false, q: '' })
   const [selected, setSelected] = useState<Set<number>>(new Set())
   const [uploading, setUploading] = useState<{ name: string; pct: number }[]>([])
@@ -14,14 +16,24 @@ export default function Library() {
   const toast = useToast()
 
   const load = async () => {
+    setLoading(true)
     const params = new URLSearchParams()
     if (filter.source) params.set('source', filter.source)
     if (filter.tag) params.set('tag', filter.tag)
     if (filter.favourite) params.set('favourite', 'true')
     if (filter.q) params.set('q', filter.q)
-    setImages(await api.get<Image[]>('/api/images?' + params.toString()))
+    try {
+      setImages(await api.get<Image[]>('/api/images?' + params.toString()))
+    } finally {
+      setLoading(false)
+    }
   }
-  useEffect(() => { document.title = 'SAWSUBE — Library'; load(); api.get<TV[]>('/api/tvs').then(setTvs) }, [])
+  useEffect(() => {
+    document.title = 'SAWSUBE — Library'
+    load()
+    setLoadingTvs(true)
+    api.get<TV[]>('/api/tvs').then(setTvs).finally(() => setLoadingTvs(false))
+  }, [])
   useEffect(() => { load() }, [filter])
 
   useEffect(() => {
@@ -110,9 +122,9 @@ export default function Library() {
           <label className="flex items-center gap-1 text-sm"><input type="checkbox" checked={filter.favourite} onChange={(e) => setFilter({ ...filter, favourite: e.target.checked })} /> Fav</label>
           <button className="btn-primary" onClick={() => fileRef.current?.click()}>Upload</button>
           <input ref={fileRef} type="file" multiple className="hidden" accept="image/*" onChange={(e) => e.target.files && upload(e.target.files)} />
-          <select className="input min-w-0" disabled={syncing !== null}
+          <select className="input min-w-0" disabled={syncing !== null || loadingTvs}
             onChange={(e) => { if (e.target.value) { syncAllTo(Number(e.target.value)); e.target.value = '' } }} defaultValue="">
-            <option value="">Sync all to TV…</option>
+            <option value="">{loadingTvs ? 'Loading TVs…' : 'Sync all to TV…'}</option>
             {tvs.map((t) => <option key={t.id} value={t.id}>{t.name}</option>)}
           </select>
         </div>
@@ -121,13 +133,21 @@ export default function Library() {
       {selected.size > 0 && (
         <div className="card p-3 flex items-center gap-2">
           <span className="text-sm">{selected.size} selected</span>
-          <select className="input w-40" onChange={(e) => e.target.value && bulkSend(Number(e.target.value))} value="">
-            <option value="">Send all to TV…</option>
+          <select className="input w-40" onChange={(e) => e.target.value && bulkSend(Number(e.target.value))} value="" disabled={loadingTvs}>
+            <option value="">{loadingTvs ? 'Loading TVs…' : 'Send all to TV…'}</option>
             {tvs.map((t) => <option key={t.id} value={t.id}>{t.name}</option>)}
           </select>
           <button className="btn-danger" onClick={bulkDelete}>Delete selected</button>
           <button className="btn-ghost" onClick={() => setSelected(new Set())}>Clear</button>
         </div>
+      )}
+
+      {loading && (
+        <div className="card p-4 text-sm text-muted">Loading library images…</div>
+      )}
+
+      {!loading && images.length === 0 && (
+        <div className="card p-4 text-sm text-muted">No images found for the current filters.</div>
       )}
 
       <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3">
@@ -144,7 +164,7 @@ export default function Library() {
             </div>
             <div className="absolute inset-x-0 bottom-0 p-2 bg-black/70 opacity-0 group-hover:opacity-100 [@media(hover:none)]:opacity-100 transition flex flex-col gap-1">
               <select className="input text-xs" onChange={(e) => e.target.value && sendTo(img.id, Number(e.target.value))} value="">
-                <option value="">Send to TV…</option>
+                <option value="">{loadingTvs ? 'Loading TVs…' : 'Send to TV…'}</option>
                 {tvs.map((t) => <option key={t.id} value={t.id}>{t.name}</option>)}
               </select>
               <div className="flex gap-1">

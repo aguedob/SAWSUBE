@@ -7,18 +7,24 @@ export default function Dashboard() {
   const [statuses, setStatuses] = useState<Record<number, TVStatus>>({})
   const [stats, setStats] = useState<any>(null)
   const [history, setHistory] = useState<any[]>([])
+  const [loading, setLoading] = useState(true)
 
   const refresh = async () => {
-    const list = await api.get<TV[]>('/api/tvs')
-    setTvs(list)
-    const results = await Promise.all(
-      list.map((t) => api.get<TVStatus>(`/api/tvs/${t.id}/status`).catch(() => null)),
-    )
-    const ss: Record<number, TVStatus> = {}
-    list.forEach((t, i) => { if (results[i]) ss[t.id] = results[i] as TVStatus })
-    setStatuses(ss)
-    setStats(await api.get('/api/stats'))
-    setHistory(await api.get<any[]>('/api/history?limit=20'))
+    setLoading(true)
+    try {
+      const list = await api.get<TV[]>('/api/tvs')
+      setTvs(list)
+      const results = await Promise.all(
+        list.map((t) => api.get<TVStatus>(`/api/tvs/${t.id}/status`).catch(() => null)),
+      )
+      const ss: Record<number, TVStatus> = {}
+      list.forEach((t, i) => { if (results[i]) ss[t.id] = results[i] as TVStatus })
+      setStatuses(ss)
+      setStats(await api.get('/api/stats'))
+      setHistory(await api.get<any[]>('/api/history?limit=20'))
+    } finally {
+      setLoading(false)
+    }
   }
   useEffect(() => { document.title = 'SAWSUBE — Dashboard'; refresh() }, [])
   useWS((m) => {
@@ -37,7 +43,10 @@ export default function Dashboard() {
   return (
     <div className="space-y-6">
       <h1 className="text-2xl">Dashboard</h1>
-      {stats && (
+      {loading && (
+        <div className="card p-4 text-sm text-muted">Loading dashboard…</div>
+      )}
+      {!loading && stats && (
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
           <Stat label="TVs" value={stats.tvs} />
           <Stat label="Images" value={stats.images} />
@@ -46,7 +55,7 @@ export default function Dashboard() {
         </div>
       )}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        {tvs.length === 0 && (
+        {!loading && tvs.length === 0 && (
           <div className="card p-6 text-muted">No TVs registered yet. Go to Discover to add one.</div>
         )}
         {tvs.map((t) => {
@@ -78,13 +87,14 @@ export default function Dashboard() {
       <div className="card p-4">
         <div className="font-semibold mb-2">Recent history</div>
         <div className="text-sm space-y-1 max-h-64 overflow-auto">
+          {loading && <div className="text-muted">Loading recent history…</div>}
           {history.map((h) => (
             <div key={h.id} className="flex justify-between text-muted">
               <span>TV {h.tv_id} · image {h.image_id}</span>
               <span>{new Date(h.shown_at).toLocaleString()} · {h.trigger}</span>
             </div>
           ))}
-          {history.length === 0 && <div className="text-muted">No history yet</div>}
+          {!loading && history.length === 0 && <div className="text-muted">No history yet</div>}
         </div>
       </div>
     </div>

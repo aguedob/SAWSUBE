@@ -8,14 +8,20 @@ export default function Settings() {
   const [newPath, setNewPath] = useState('')
   const [tvs, setTvs] = useState<TV[]>([])
   const [tvNames, setTvNames] = useState<Record<number, string>>({})
+  const [loading, setLoading] = useState(true)
   const t = useToast()
   const { theme, setTheme } = useTheme()
 
   const load = async () => {
-    setFolders(await api.get<Folder[]>('/api/sources/folders'))
-    const tvList = await api.get<TV[]>('/api/tvs')
-    setTvs(tvList)
-    setTvNames(Object.fromEntries(tvList.map((tv) => [tv.id, tv.name])))
+    setLoading(true)
+    try {
+      setFolders(await api.get<Folder[]>('/api/sources/folders'))
+      const tvList = await api.get<TV[]>('/api/tvs')
+      setTvs(tvList)
+      setTvNames(Object.fromEntries(tvList.map((tv) => [tv.id, tv.name])))
+    } finally {
+      setLoading(false)
+    }
   }
   useEffect(() => { document.title = 'SAWSUBE — Settings'; load() }, [])
 
@@ -48,6 +54,7 @@ export default function Settings() {
           <button className="btn-primary" onClick={addFolder}>Add</button>
         </div>
         <div className="space-y-1 mt-3">
+          {loading && <div className="text-muted text-sm">Loading watch folders…</div>}
           {folders.map((f) => (
             <div key={f.id} className="flex justify-between items-center text-sm border border-border rounded px-3 py-2">
               <span className="truncate">{f.path}</span>
@@ -57,11 +64,12 @@ export default function Settings() {
               </div>
             </div>
           ))}
-          {folders.length === 0 && <div className="text-muted text-sm">None.</div>}
+          {!loading && folders.length === 0 && <div className="text-muted text-sm">None.</div>}
         </div>
       </Section>
 
       <Section title="TVs">
+        {loading && <div className="text-muted text-sm">Loading registered TVs…</div>}
         {tvs.map((t) => (
           <div key={t.id} className="flex flex-col gap-2 py-2 border-b last:border-b-0 border-border">
             <div className="text-sm text-muted">{t.ip} · {t.mac || 'no MAC'}</div>
@@ -76,6 +84,7 @@ export default function Settings() {
             </div>
           </div>
         ))}
+        {!loading && tvs.length === 0 && <div className="text-muted text-sm">No TVs registered.</div>}
       </Section>
 
       <Section title="Theme">
