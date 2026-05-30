@@ -11,6 +11,13 @@ class TVCreate(BaseModel):
     port: int = 8002
 
 
+class TVUpdate(BaseModel):
+    name: str | None = None
+    ip: str | None = None
+    mac: str | None = None
+    port: int | None = None
+
+
 class TVOut(BaseModel):
     model_config = ConfigDict(from_attributes=True)
     id: int

@@ -4,7 +4,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from ..database import get_session
 from ..models.tv import TV
-from ..schemas import TVCreate, TVOut, TVStatus
+from ..schemas import TVCreate, TVOut, TVStatus, TVUpdate
 from ..services.tv_manager import tv_manager, token_path_for, HAS_LIB
 from ..services.discovery import discover_tvs
 
@@ -41,6 +41,21 @@ async def get_tv(tv_id: int, s: AsyncSession = Depends(get_session)):
     tv = await s.get(TV, tv_id)
     if not tv:
         raise HTTPException(404, "TV not found")
+    return tv
+
+
+@router.patch("/{tv_id}", response_model=TVOut)
+async def update_tv(tv_id: int, payload: TVUpdate, s: AsyncSession = Depends(get_session)):
+    tv = await s.get(TV, tv_id)
+    if not tv:
+        raise HTTPException(404, "TV not found")
+
+    changes = payload.model_dump(exclude_unset=True)
+    for field, value in changes.items():
+        setattr(tv, field, value)
+
+    await s.commit()
+    await s.refresh(tv)
     return tv
 
 

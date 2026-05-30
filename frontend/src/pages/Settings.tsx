@@ -7,12 +7,15 @@ export default function Settings() {
   const [folders, setFolders] = useState<Folder[]>([])
   const [newPath, setNewPath] = useState('')
   const [tvs, setTvs] = useState<TV[]>([])
+  const [tvNames, setTvNames] = useState<Record<number, string>>({})
   const t = useToast()
   const { theme, setTheme } = useTheme()
 
   const load = async () => {
     setFolders(await api.get<Folder[]>('/api/sources/folders'))
-    setTvs(await api.get<TV[]>('/api/tvs'))
+    const tvList = await api.get<TV[]>('/api/tvs')
+    setTvs(tvList)
+    setTvNames(Object.fromEntries(tvList.map((tv) => [tv.id, tv.name])))
   }
   useEffect(() => { document.title = 'SAWSUBE — Settings'; load() }, [])
 
@@ -20,6 +23,19 @@ export default function Settings() {
     if (!newPath) return
     try { await api.post('/api/sources/folders', { path: newPath, is_active: true, auto_display: false }); setNewPath(''); load() }
     catch (e: any) { t.push({ type: 'error', text: e.message }) }
+  }
+
+  const renameTv = async (tv: TV) => {
+    const nextName = (tvNames[tv.id] ?? '').trim()
+    if (!nextName || nextName === tv.name) return
+    try {
+      await api.patch(`/api/tvs/${tv.id}`, { name: nextName })
+    } catch (e: any) {
+      t.push({ type: 'error', text: e.message })
+      return
+    }
+    t.push({ type: 'success', text: `Renamed TV to ${nextName}` })
+    load()
   }
 
   return (
@@ -47,9 +63,17 @@ export default function Settings() {
 
       <Section title="TVs">
         {tvs.map((t) => (
-          <div key={t.id} className="flex justify-between text-sm py-1">
-            <span>{t.name} · {t.ip} · {t.mac || 'no MAC'}</span>
-            <button className="btn-danger" onClick={() => confirm('Remove TV?') && api.del(`/api/tvs/${t.id}`).then(load)}>Remove</button>
+          <div key={t.id} className="flex flex-col gap-2 py-2 border-b last:border-b-0 border-border">
+            <div className="text-sm text-muted">{t.ip} · {t.mac || 'no MAC'}</div>
+            <div className="flex gap-2 items-center">
+              <input
+                className="input"
+                value={tvNames[t.id] ?? ''}
+                onChange={(e) => setTvNames((prev) => ({ ...prev, [t.id]: e.target.value }))}
+              />
+              <button className="btn-primary" disabled={!(tvNames[t.id] ?? '').trim() || (tvNames[t.id] ?? '').trim() === t.name} onClick={() => renameTv(t)}>Save</button>
+              <button className="btn-danger" onClick={() => confirm('Remove TV?') && api.del(`/api/tvs/${t.id}`).then(load)}>Remove</button>
+            </div>
           </div>
         ))}
       </Section>

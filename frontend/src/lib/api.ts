@@ -22,6 +22,8 @@ export const api = {
   get: <T,>(p: string) => req<T>(p),
   post: <T,>(p: string, body?: any) =>
     req<T>(p, { method: 'POST', body: body ? JSON.stringify(body) : undefined }),
+  patch: <T,>(p: string, body?: any) =>
+    req<T>(p, { method: 'PATCH', body: body ? JSON.stringify(body) : undefined }),
   put: <T,>(p: string, body?: any) =>
     req<T>(p, { method: 'PUT', body: body ? JSON.stringify(body) : undefined }),
   del: <T,>(p: string) => req<T>(p, { method: 'DELETE' }),

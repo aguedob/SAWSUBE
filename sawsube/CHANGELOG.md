@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.11
+
+- Add TV rename support in Settings so registered TVs can be renamed without deleting and re-adding them.
+
 ## 0.1.10
 
 - Move theme selection into Settings with `light`, `dark`, and `auto` modes.

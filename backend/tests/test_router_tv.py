@@ -27,6 +27,19 @@ async def test_get_unknown_tv_404(app_client):
     assert r.status_code == 404
 
 
+async def test_update_tv_name(app_client):
+    r = await app_client.post("/api/tvs", json={"name": "true", "ip": "10.0.0.10"})
+    tv_id = r.json()["id"]
+
+    r2 = await app_client.patch(f"/api/tvs/{tv_id}", json={"name": "Living Room"})
+    assert r2.status_code == 200
+    assert r2.json()["name"] == "Living Room"
+
+    r3 = await app_client.get(f"/api/tvs/{tv_id}")
+    assert r3.status_code == 200
+    assert r3.json()["name"] == "Living Room"
+
+
 async def test_delete_tv(app_client):
     r = await app_client.post("/api/tvs", json={"name": "Bed", "ip": "10.0.0.6"})
     tv_id = r.json()["id"]
