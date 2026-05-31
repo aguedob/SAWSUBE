@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.18
+
+- Add a configurable upload mode setting with `fit`, `fill`, and `stretch` processing behavior for uploaded artwork.
+
 ## 0.1.17
 
 - Make The Met source use a gentler request pattern with explicit headers so searches are less likely to fail behind upstream protection layers.

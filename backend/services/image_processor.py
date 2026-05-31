@@ -82,6 +82,21 @@ def _center_crop_resize(img: PILImage, target: tuple[int, int]) -> PILImage:
     return img.resize((tw, th), Image.LANCZOS)
 
 
+def _aspect_fit(img: PILImage, target: tuple[int, int], bg_color: tuple[int, int, int] = (0, 0, 0)) -> PILImage:
+    tw, th = target
+    fitted = img.copy()
+    fitted.thumbnail((tw, th), Image.LANCZOS)
+    canvas = Image.new("RGB", target, bg_color)
+    x = (tw - fitted.width) // 2
+    y = (th - fitted.height) // 2
+    canvas.paste(fitted, (x, y))
+    return canvas
+
+
+def _stretch_resize(img: PILImage, target: tuple[int, int]) -> PILImage:
+    return img.resize(target, Image.LANCZOS)
+
+
 def process_image_sync(src_path: str, file_hash: str) -> tuple[str, int, int]:
     """Run pipeline. Return (processed_path, width, height). Cached by hash."""
     out_path = os.path.join(settings.IMAGE_CACHE_DIR, f"{file_hash}.jpg")
@@ -97,21 +112,11 @@ def process_image_sync(src_path: str, file_hash: str) -> tuple[str, int, int]:
         if icc and not im.info.get("icc_profile"):
             im.info["icc_profile"] = icc
         im = _to_srgb(im)
-        iw, ih = im.size
-        ratio = iw / ih
-        if ratio < 1.3:
-            mode = settings.PORTRAIT_HANDLING.lower()
-            if mode == "skip":
-                # still produce centred letterbox black bg
-                processed = Image.new("RGB", target, (0, 0, 0))
-                fscale = target[1] / ih
-                new_w = int(iw * fscale)
-                fg = im.resize((new_w, target[1]), Image.LANCZOS)
-                processed.paste(fg, ((target[0] - new_w) // 2, 0))
-            elif mode == "crop":
-                processed = _center_crop_resize(im, target)
-            else:
-                processed = _blur_fill(im, target)
+        upload_mode = settings.UPLOAD_MODE.lower()
+        if upload_mode == "fit":
+            processed = _aspect_fit(im, target)
+        elif upload_mode == "stretch":
+            processed = _stretch_resize(im, target)
         else:
             processed = _center_crop_resize(im, target)
 

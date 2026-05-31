@@ -4,12 +4,13 @@ import socket
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy import select, func
 from sqlalchemy.ext.asyncio import AsyncSession
-from ..config import settings
+from ..config import settings, runtime_settings_dict, save_runtime_settings
 from ..database import get_session
 from ..models.history import History
 from ..models.image import Image, TVImage
 from ..models.tv import TV
 from ..models.schedule import Schedule
+from ..schemas import RuntimeSettingsUpdate
 
 router = APIRouter(prefix="/api", tags=["meta"])
 
@@ -68,3 +69,20 @@ async def stats(s: AsyncSession = Depends(get_session)):
         "images_on_tv": on_tv, "schedules_active": sched_active,
         "storage_bytes": storage,
     }
+
+
+@router.get("/settings/runtime")
+async def get_runtime_settings():
+    return {
+        **runtime_settings_dict(),
+        "tv_resolution": settings.TV_RESOLUTION,
+        "portrait_handling": settings.PORTRAIT_HANDLING,
+    }
+
+
+@router.put("/settings/runtime")
+async def update_runtime_settings(payload: RuntimeSettingsUpdate):
+    try:
+        return save_runtime_settings(upload_mode=payload.upload_mode)
+    except ValueError as e:
+        raise HTTPException(400, str(e)) from e

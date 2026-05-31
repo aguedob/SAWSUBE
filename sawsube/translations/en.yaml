@@ -8,6 +8,9 @@ configuration:
   tv_resolution:
     name: TV resolution
     description: Output resolution used for processed artwork.
+  upload_mode:
+    name: Upload mode
+    description: How SAWSUBE should scale uploaded artwork to the TV canvas.
   portrait_handling:
     name: Portrait handling
     description: How portrait and square artwork should be adapted for the TV.

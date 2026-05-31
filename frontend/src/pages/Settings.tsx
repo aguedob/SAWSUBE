@@ -12,6 +12,8 @@ export default function Settings() {
   const [tvs, setTvs] = useState<TV[]>([])
   const [tvNames, setTvNames] = useState<Record<number, string>>({})
   const [loading, setLoading] = useState(true)
+  const [runtimeSettings, setRuntimeSettings] = useState<{ upload_mode: string; tv_resolution: string; portrait_handling: string } | null>(null)
+  const [savingUploadMode, setSavingUploadMode] = useState(false)
   const t = useToast()
   const { theme, setTheme } = useTheme()
 
@@ -22,6 +24,7 @@ export default function Settings() {
       const tvList = await api.get<TV[]>('/api/tvs')
       setTvs(tvList)
       setTvNames(Object.fromEntries(tvList.map((tv) => [tv.id, tv.name])))
+      setRuntimeSettings(await api.get('/api/settings/runtime'))
     } finally {
       setLoading(false)
     }
@@ -105,6 +108,55 @@ export default function Settings() {
         </div>
       </Section>
 
+      <Section title="Upload mode">
+        <div className="space-y-3">
+          <div className="text-sm text-muted">
+            Choose how uploaded images are resized to the TV canvas before they are stored as processed artwork.
+          </div>
+          {!runtimeSettings && <LoadingInline text="Loading upload mode…" />}
+          {runtimeSettings && (
+            <>
+              <select
+                className="input max-w-sm"
+                value={runtimeSettings.upload_mode}
+                disabled={savingUploadMode}
+                onChange={async (e) => {
+                  const upload_mode = e.target.value
+                  setRuntimeSettings((prev) => prev ? { ...prev, upload_mode } : prev)
+                  setSavingUploadMode(true)
+                  try {
+                    const next = await api.put<{ upload_mode: string }>('/api/settings/runtime', { upload_mode })
+                    setRuntimeSettings((prev) => (
+                      prev
+                        ? { ...prev, upload_mode: next.upload_mode }
+                        : { upload_mode: next.upload_mode, tv_resolution: '4K', portrait_handling: 'blur' }
+                    ))
+                    t.push({ type: 'success', text: 'Upload mode updated' })
+                  } catch (err: any) {
+                    t.push({ type: 'error', text: err.message })
+                    load()
+                  } finally {
+                    setSavingUploadMode(false)
+                  }
+                }}
+              >
+                <option value="fit">Scale to Fit (Aspect Fit)</option>
+                <option value="fill">Scale to Fill (Aspect Fill / Crop)</option>
+                <option value="stretch">Stretch (Scale to Fill)</option>
+              </select>
+              <div className="text-xs text-muted space-y-1">
+                <div><strong>Scale to Fit:</strong> keeps the whole image visible and preserves aspect ratio, with empty background space if needed.</div>
+                <div><strong>Scale to Fill:</strong> fills the whole frame while preserving aspect ratio, cropping any overflow.</div>
+                <div><strong>Stretch:</strong> fills the whole frame by scaling width and height independently, which can distort the image.</div>
+              </div>
+              <div className="text-xs text-muted">
+                Current TV resolution: <code>{runtimeSettings.tv_resolution}</code>. Legacy portrait handling setting: <code>{runtimeSettings.portrait_handling}</code>.
+              </div>
+            </>
+          )}
+        </div>
+      </Section>
+
       <Section title="Environment notes">
         <p className="text-sm text-muted">
           API keys (Unsplash, Rijksmuseum, NASA) and other defaults are configured via the
@@ -114,6 +166,7 @@ export default function Settings() {
         <ul className="text-xs text-muted list-disc pl-5 space-y-0.5">
           <li>UNSPLASH_API_KEY</li>
           <li>TV_RESOLUTION (4K | 1080p)</li>
+          <li>UPLOAD_MODE (fit | fill | stretch)</li>
           <li>PORTRAIT_HANDLING (blur | crop | skip)</li>
           <li>IMAGE_FOLDER (downloaded source images)</li>
         </ul>

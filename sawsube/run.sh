@@ -10,6 +10,7 @@ export TOKEN_DIR="/data/tokens"
 export IMAGE_CACHE_DIR="/data/cache"
 export THUMBNAIL_DIR="/data/thumbnails"
 export TV_RESOLUTION
+export UPLOAD_MODE
 export PORTRAIT_HANDLING
 export UNSPLASH_API_KEY
 export RIJKSMUSEUM_API_KEY
@@ -34,6 +35,7 @@ fi
 TV_DEFAULT_IP="$(json_value 'tv_default_ip')"
 IMAGE_FOLDER="$(json_value 'image_folder')"
 TV_RESOLUTION="$(json_value 'tv_resolution')"
+UPLOAD_MODE="$(json_value 'upload_mode')"
 PORTRAIT_HANDLING="$(json_value 'portrait_handling')"
 UNSPLASH_API_KEY="$(json_value 'unsplash_api_key')"
 RIJKSMUSEUM_API_KEY="$(json_value 'rijksmuseum_api_key')"

@@ -123,3 +123,7 @@ class ImportPayload(BaseModel):
     url: str | None = None
     id: str | None = None
     meta: dict[str, Any] | None = None
+
+
+class RuntimeSettingsUpdate(BaseModel):
+    upload_mode: str

@@ -1,5 +1,5 @@
 name: "SAWSUBE"
-version: "0.1.17"
+version: "0.1.18"
 slug: "sawsube"
 description: "Samsung Frame TV art management for Home Assistant"
 url: "https://github.com/aguedob/SAWSUBE"
@@ -28,6 +28,7 @@ options:
   tv_default_ip: ""
   image_folder: "/data/images"
   tv_resolution: "4K"
+  upload_mode: "fill"
   portrait_handling: "blur"
   unsplash_api_key: ""
   rijksmuseum_api_key: ""
@@ -41,6 +42,7 @@ schema:
   tv_default_ip: str?
   image_folder: str
   tv_resolution: list(4K|1080p)
+  upload_mode: list(fit|fill|stretch)
   portrait_handling: list(blur|crop|skip)
   unsplash_api_key: password?
   rijksmuseum_api_key: password?

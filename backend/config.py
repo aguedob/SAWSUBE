@@ -1,4 +1,5 @@
 from __future__ import annotations
+import json
 import os
 from pathlib import Path
 from pydantic_settings import BaseSettings, SettingsConfigDict
@@ -15,6 +16,7 @@ class Settings(BaseSettings):
     THUMBNAIL_DIR: str = "./data/thumbnails"
     TV_RESOLUTION: str = "4K"  # 4K | 1080p
     PORTRAIT_HANDLING: str = "blur"  # blur | crop | skip
+    UPLOAD_MODE: str = "fill"  # fit | fill | stretch
     UNSPLASH_API_KEY: str = ""
     RIJKSMUSEUM_API_KEY: str = ""
     NASA_API_KEY: str = ""
@@ -67,6 +69,45 @@ class Settings(BaseSettings):
 
 
 settings = Settings()
+
+RUNTIME_SETTINGS_PATH = os.path.join(os.path.dirname(settings.DB_PATH) or ".", "runtime_settings.json")
+
+
+def _apply_runtime_overrides() -> None:
+    if not os.path.exists(RUNTIME_SETTINGS_PATH):
+        return
+    try:
+        with open(RUNTIME_SETTINGS_PATH, "r", encoding="utf-8") as f:
+            data = json.load(f)
+    except Exception:
+        return
+
+    upload_mode = str(data.get("upload_mode", "")).strip().lower()
+    if upload_mode in {"fit", "fill", "stretch"}:
+        settings.UPLOAD_MODE = upload_mode
+
+
+def runtime_settings_dict() -> dict[str, str]:
+    return {
+        "upload_mode": settings.UPLOAD_MODE.lower(),
+    }
+
+
+def save_runtime_settings(*, upload_mode: str | None = None) -> dict[str, str]:
+    if upload_mode is not None:
+        mode = upload_mode.strip().lower()
+        if mode not in {"fit", "fill", "stretch"}:
+            raise ValueError("upload_mode must be fit, fill, or stretch")
+        settings.UPLOAD_MODE = mode
+
+    payload = runtime_settings_dict()
+    Path(os.path.dirname(RUNTIME_SETTINGS_PATH) or ".").mkdir(parents=True, exist_ok=True)
+    with open(RUNTIME_SETTINGS_PATH, "w", encoding="utf-8") as f:
+        json.dump(payload, f, indent=2, sort_keys=True)
+    return payload
+
+
+_apply_runtime_overrides()
 
 # Ensure directories exist
 for p in [settings.IMAGE_FOLDER, settings.TOKEN_DIR, settings.IMAGE_CACHE_DIR,
