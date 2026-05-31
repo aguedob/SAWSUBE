@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.21
+
+- Clear previous source search results immediately and show a centered animated spinner while new results are loading.
+
 ## 0.1.20
 
 - Improve The Met search result ranking so artist-name queries surface more relevant works instead of loosely matching collection items.
