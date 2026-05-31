@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.22
+
+- Version bump.
+
 ## 0.1.21
 
 - Clear previous source search results immediately and show a centered animated spinner while new results are loading.
