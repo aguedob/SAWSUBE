@@ -15,6 +15,8 @@ log = logging.getLogger(__name__)
 
 TV_CONNECT_TIMEOUT_SECS = 3.0
 TV_STATUS_TIMEOUT_SECS = 5.0
+TV_UPLOAD_VERIFY_DELAYS_SECS = (0.0, 1.0, 2.0)
+TV_SELECT_RETRY_DELAYS_SECS = (0.0, 1.0, 2.0)
 
 # samsungtvws (NickWaterton fork) optional import — guarded so app still boots
 # even if user hasn't installed deps yet.
@@ -291,6 +293,22 @@ class TVManager:
             conn.art = None
             return False
 
+    async def _remote_image_exists(self, art: Any, remote_id: str) -> bool:
+        try:
+            items = await art.available()
+        except Exception as e:
+            log.warning("available() failed while verifying remote image %s: %s", remote_id, e, exc_info=True)
+            return False
+        if not isinstance(items, list):
+            return False
+        for item in items:
+            if not isinstance(item, dict):
+                continue
+            content_id = item.get("content_id") or item.get("contentId") or item.get("id")
+            if content_id == remote_id:
+                return True
+        return False
+
     async def upload_image(self, tv: TV, file_path: str, matte: str = "none",
                            file_type: str = "JPEG") -> str | None:
         conn = await self.get(tv)
@@ -301,7 +319,26 @@ class TVManager:
             log.debug("upload_image: uploading %s to TV %s", file_path, tv.id)
             content_id = await art.upload(data, file_type=file_type, matte=matte)
             log.info("upload_image: TV %s accepted %s → remote_id=%s", tv.id, file_path, content_id)
-            return content_id
+            for attempt, delay in enumerate(TV_UPLOAD_VERIFY_DELAYS_SECS, start=1):
+                if delay > 0:
+                    await asyncio.sleep(delay)
+                if await self._remote_image_exists(art, content_id):
+                    return content_id
+                log.warning(
+                    "upload_image verify attempt %s/%s did not find TV %s remote_id=%s in gallery yet",
+                    attempt,
+                    len(TV_UPLOAD_VERIFY_DELAYS_SECS),
+                    tv.id,
+                    content_id,
+                )
+            log.warning(
+                "upload_image verification failed for TV %s path=%s remote_id=%s",
+                tv.id,
+                file_path,
+                content_id,
+            )
+            conn.art = None
+            return None
         except Exception as e:
             log.warning("upload_image failed for TV %s path=%s: %s", tv.id, file_path, e, exc_info=True)
             conn.art = None  # force reconnect on next call
@@ -309,15 +346,28 @@ class TVManager:
 
     async def select_image(self, tv: TV, remote_id: str, show: bool = True) -> bool:
         conn = await self.get(tv)
-        try:
-            art = await conn._ensure_art()
-            await art.select_image(remote_id, show=show)
-            await ws_manager.broadcast({"type": "art_changed", "tv_id": tv.id, "remote_id": remote_id})
-            return True
-        except Exception as e:
-            log.warning("select_image failed TV %s remote_id=%s: %s", tv.id, remote_id, e, exc_info=True)
-            conn.art = None
-            return False
+        for attempt, delay in enumerate(TV_SELECT_RETRY_DELAYS_SECS, start=1):
+            if delay > 0:
+                await asyncio.sleep(delay)
+            try:
+                art = await conn._ensure_art()
+                await art.select_image(remote_id, show=show)
+                await ws_manager.broadcast({"type": "art_changed", "tv_id": tv.id, "remote_id": remote_id})
+                return True
+            except Exception as e:
+                log.warning(
+                    "select_image attempt %s/%s failed TV %s remote_id=%s: %s",
+                    attempt,
+                    len(TV_SELECT_RETRY_DELAYS_SECS),
+                    tv.id,
+                    remote_id,
+                    e,
+                    exc_info=True,
+                )
+                if attempt < len(TV_SELECT_RETRY_DELAYS_SECS):
+                    conn.art = None
+        conn.art = None
+        return False
 
     async def delete_image(self, tv: TV, remote_id: str) -> bool:
         conn = await self.get(tv)

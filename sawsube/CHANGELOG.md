@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.19
+
+- Verify TV uploads actually appear in the Samsung art gallery before marking them successful, and retry the immediate display step briefly after upload.
+
 ## 0.1.18
 
 - Add a configurable upload mode setting with `fit`, `fill`, and `stretch` processing behavior for uploaded artwork.
