@@ -7,7 +7,7 @@ import Dashboard from './pages/Dashboard'
 import Library from './pages/Library'
 import TVControl from './pages/TVControl'
 import Discover from './pages/Discover'
-import Sources from './pages/Sources'
+import Sources, { SourceDetail } from './pages/Sources'
 import Schedules from './pages/Schedules'
 import Settings from './pages/Settings'
 import TizenBrew from './pages/TizenBrew'
@@ -47,6 +47,7 @@ export default function App() {
               <Route path="/tv" element={<TVControl />} />
               <Route path="/discover" element={<Discover />} />
               <Route path="/sources" element={<Sources />} />
+              <Route path="/sources/:sourceId" element={<SourceDetail />} />
               <Route path="/schedules" element={<Schedules />} />
               <Route path="/settings" element={<Settings />} />
               <Route path="/tizenbrew" element={<TizenBrew />} />

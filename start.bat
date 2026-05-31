@@ -4,12 +4,28 @@ setlocal enabledelayedexpansion
 
 cd /d "%~dp0"
 
+python -c "import sys; raise SystemExit(0 if sys.version_info >= (3, 11) else 1)" >nul 2>nul
+if errorlevel 1 (
+  echo Python 3.11+ is required.
+  python --version 2>nul
+  echo Install Python 3.11 or newer and ensure ^`python^` points to it.
+  goto :error
+)
+
 if not exist .venv (
   echo Creating venv...
   python -m venv .venv || goto :error
 )
 
 call .venv\Scripts\activate.bat
+
+python -c "import sys; raise SystemExit(0 if sys.version_info >= (3, 11) else 1)" >nul 2>nul
+if errorlevel 1 (
+  echo .venv is using an older Python interpreter.
+  python --version 2>nul
+  echo Delete .venv, install Python 3.11+, and run this script again.
+  goto :error
+)
 
 echo Installing backend deps...
 python -m pip install --upgrade pip >nul

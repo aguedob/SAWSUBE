@@ -180,11 +180,27 @@ chmod +x start.sh
 ./start.sh
 ```
 
+`start.sh` requires `python3.11` or newer and will refuse to create a virtualenv with an older interpreter.
+
+For frontend development with hot reload:
+
+```bash
+./start.sh --dev
+```
+
+This starts:
+- the backend with Uvicorn reload on `http://localhost:8000`
+- the Vite dev server with HMR on `http://localhost:5173`
+
+When using `--dev`, open `http://localhost:5173` in your browser so frontend changes appear instantly.
+
 ### Option 3 — Native on Windows
 
 ```cmd
 start.bat
 ```
+
+`start.bat` requires `python` to be Python 3.11 or newer.
 
 Both scripts:
 1. Create a Python virtual environment in `.venv` if one doesn't exist
@@ -192,6 +208,8 @@ Both scripts:
 3. Copy `.env.example` to `.env` if absent
 4. Build the React frontend with npm (if Node is installed)
 5. Start the app at **http://localhost:8000**
+
+If you previously created `.venv` with Python 3.9 or 3.10, remove `.venv` and run the start script again after installing Python 3.11+.
 
 ---
 

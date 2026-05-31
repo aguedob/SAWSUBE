@@ -1,6 +1,8 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
+import { useLocation, useNavigate } from 'react-router-dom'
 import { api } from '../lib/api'
 import { useToast } from '../components/Toast'
+import { Spinner } from '../components/Loading'
 
 export default function Discover() {
   useEffect(() => { document.title = 'SAWSUBE — Discover' }, [])
@@ -8,6 +10,9 @@ export default function Discover() {
   const [results, setResults] = useState<any[]>([])
   const [manual, setManual] = useState({ name: 'Frame TV', ip: '', mac: '' })
   const t = useToast()
+  const location = useLocation()
+  const navigate = useNavigate()
+  const didAutoScan = useRef(false)
 
   const scan = async () => {
     setScanning(true)
@@ -18,6 +23,13 @@ export default function Discover() {
     } catch (e: any) { t.push({ type: 'error', text: e.message }) }
     finally { setScanning(false) }
   }
+
+  useEffect(() => {
+    if (!location.state || !(location.state as { autoScan?: boolean }).autoScan || didAutoScan.current) return
+    didAutoScan.current = true
+    navigate(location.pathname, { replace: true, state: null })
+    scan()
+  }, [location.pathname, location.state, navigate])
 
   const add = async (payload: any) => {
     try {
@@ -33,6 +45,15 @@ export default function Discover() {
         <button className="btn-primary" onClick={scan} disabled={scanning}>
           {scanning ? 'Scanning…' : 'Scan Network'}
         </button>
+        {scanning && (
+          <div className="py-8 flex flex-col items-center justify-center text-center gap-3">
+            <Spinner className="text-accent text-3xl" />
+            <div>
+              <div className="font-semibold">Scanning your network…</div>
+              <div className="text-sm text-muted">Looking for Samsung TVs on your local network.</div>
+            </div>
+          </div>
+        )}
         <div className="space-y-2">
           {results.map((r) => (
             <div key={r.ip} className="flex justify-between items-center border border-border rounded p-2">

@@ -3,6 +3,7 @@ uvicorn[standard]>=0.27.0
 pydantic>=2.5.0
 pydantic-settings>=2.1.0
 sqlalchemy>=2.0.25
+greenlet>=3.0.3
 aiosqlite>=0.19.0
 Pillow>=10.2.0
 APScheduler>=3.10.4
@@ -15,4 +16,3 @@ websockets>=12.0
 # async_art / async_remote to work correctly. The xchwarze PyPI release is a different
 # codebase and causes "samsungtvws library not installed" in Docker.
 samsungtvws[async,encrypted] @ git+https://github.com/NickWaterton/samsung-tv-ws-api.git
-

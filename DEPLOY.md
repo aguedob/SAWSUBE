@@ -12,6 +12,10 @@ nohup .venv/bin/python -m backend.main > /tmp/sawsube.log 2>&1 &
 sleep 3 && curl -s http://127.0.0.1:8000/api/health
 ```
 
+Use Python 3.11 or newer for `.venv`. If the virtualenv was created with Python 3.9 or 3.10, recreate it before starting SAWSUBE.
+
+For local frontend development, use `./start.sh --dev` instead of the production-style startup. That runs Vite with hot reload on port `5173` and proxies API/WebSocket traffic to the backend on port `8000`.
+
 ### Restart after Python code changes
 
 ```bash

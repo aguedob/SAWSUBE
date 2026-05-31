@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { api, TV, TVImage, TVStatus, makeUrl } from '../lib/api'
 import { useToast } from '../components/Toast'
 
@@ -6,6 +7,7 @@ export default function TVControl() {
   const [tvs, setTvs] = useState<TV[]>([])
   const [active, setActive] = useState<number | null>(null)
   const t = useToast()
+  const navigate = useNavigate()
 
   useEffect(() => {
     document.title = 'SAWSUBE — TV Control'
@@ -25,7 +27,20 @@ export default function TVControl() {
         ))}
       </div>
       {active && tvs.find((x) => x.id === active) && <TVPanel tv={tvs.find((x) => x.id === active)!} />}
-      {tvs.length === 0 && <div className="card p-6 text-muted">No TVs. Add one in Discover.</div>}
+      {tvs.length === 0 && (
+        <div className="card p-6 space-y-4">
+          <div>
+            <div className="font-semibold">No TVs connected yet</div>
+            <div className="text-muted text-sm">Jump to Discover and start scanning your network automatically.</div>
+          </div>
+          <button
+            className="btn-primary"
+            onClick={() => navigate('/discover', { state: { autoScan: true } })}
+          >
+            Add your first TV
+          </button>
+        </div>
+      )}
     </div>
   )
 }
