@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from difflib import SequenceMatcher
+
 import httpx
 
 SEARCH_URL = "https://collectionapi.metmuseum.org/public/collection/v1/search"
@@ -26,7 +28,38 @@ def _normalize_object(payload: dict) -> dict | None:
         "credit": credit,
         "credit_url": payload.get("artistWikidata_URL") or payload.get("artistULAN_URL") or "",
         "html": payload.get("objectURL") or "",
+        "_artist": payload.get("artistDisplayName") or "",
+        "_culture": payload.get("culture") or "",
+        "_object_name": payload.get("objectName") or "",
     }
+
+
+def _score_result(item: dict, query: str) -> float:
+    q = query.strip().lower()
+    if not q:
+        return 0.0
+
+    artist = str(item.get("_artist", "")).lower()
+    title = str(item.get("title", "")).lower()
+    culture = str(item.get("_culture", "")).lower()
+    object_name = str(item.get("_object_name", "")).lower()
+    haystacks = [artist, title, culture, object_name]
+
+    score = 0.0
+    for idx, text in enumerate(haystacks):
+        if not text:
+            continue
+        weight = 4.0 if idx == 0 else 2.5 if idx == 1 else 1.5
+        if q == text:
+            score += 100.0 * weight
+        if q in text:
+            score += 40.0 * weight
+        score += SequenceMatcher(None, q, text).ratio() * 10.0 * weight
+        for token in q.split():
+            if token and token in text:
+                score += 8.0 * weight
+            score += SequenceMatcher(None, token, text).ratio() * 2.0 * weight
+    return score
 
 
 async def _fetch_object(client: httpx.AsyncClient, object_id: int | str) -> dict | None:
@@ -51,7 +84,7 @@ async def search(query: str, per_page: int = 20) -> list[dict]:
         response = await client.get(SEARCH_URL, params=params)
         response.raise_for_status()
         payload = response.json()
-        object_ids = (payload.get("objectIDs") or [])[: max(limit * 5, limit)]
+        object_ids = (payload.get("objectIDs") or [])[: max(limit * 10, 100)]
         if not object_ids:
             return []
         results: list[dict] = []
@@ -62,10 +95,16 @@ async def search(query: str, per_page: int = 20) -> list[dict]:
                 continue
             if item:
                 results.append(item)
-            if len(results) >= limit:
+            if len(results) >= max(limit * 3, 40):
                 break
 
-    return results
+    ranked = sorted(results, key=lambda item: _score_result(item, query), reverse=True)
+    trimmed = ranked[:limit]
+    for item in trimmed:
+        item.pop("_artist", None)
+        item.pop("_culture", None)
+        item.pop("_object_name", None)
+    return trimmed
 
 
 async def get(object_id: str) -> dict | None:

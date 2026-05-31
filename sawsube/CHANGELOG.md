@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.20
+
+- Improve The Met search result ranking so artist-name queries surface more relevant works instead of loosely matching collection items.
+
 ## 0.1.19
 
 - Verify TV uploads actually appear in the Samsung art gallery before marking them successful, and retry the immediate display step briefly after upload.
