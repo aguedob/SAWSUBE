@@ -30,12 +30,14 @@ type SourceDef = {
   component: () => JSX.Element
 }
 
+const assetUrl = (path: string) => `${import.meta.env.BASE_URL}${path}`
+
 const SOURCE_DEFS: SourceDef[] = [
   {
     id: 'unsplash',
     title: 'Unsplash',
     subtitle: 'Editorial-quality photography',
-    logo: '/logos/unsplash.svg',
+    logo: assetUrl('logos/unsplash.svg'),
     mark: 'U',
     palette: {
       background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 52%, #475569 100%)',
@@ -49,7 +51,7 @@ const SOURCE_DEFS: SourceDef[] = [
     id: 'nasa-apod',
     title: 'NASA APOD',
     subtitle: 'Astronomy Picture of the Day',
-    logo: '/logos/nasa.svg',
+    logo: assetUrl('logos/nasa.svg'),
     mark: 'NASA',
     palette: {
       background: 'linear-gradient(135deg, #020617 0%, #172554 48%, #1d4ed8 100%)',
@@ -63,7 +65,7 @@ const SOURCE_DEFS: SourceDef[] = [
     id: 'rijksmuseum',
     title: 'Rijksmuseum',
     subtitle: 'Dutch masters and public-domain art',
-    logo: '/logos/rijksmuseum.svg',
+    logo: assetUrl('logos/rijksmuseum.svg'),
     mark: 'rijksmuseum',
     palette: {
       background: 'linear-gradient(135deg, #3f1d12 0%, #7c2d12 44%, #d97706 100%)',
@@ -77,7 +79,7 @@ const SOURCE_DEFS: SourceDef[] = [
     id: 'metmuseum',
     title: 'The Met',
     subtitle: 'The Metropolitan Museum collection',
-    logo: '/logos/met.svg',
+    logo: assetUrl('logos/met.svg'),
     mark: 'THE MET',
     palette: {
       background: 'linear-gradient(135deg, #450a0a 0%, #991b1b 52%, #ef4444 100%)',
@@ -91,7 +93,7 @@ const SOURCE_DEFS: SourceDef[] = [
     id: 'reddit',
     title: 'Reddit',
     subtitle: 'Single-image posts from your favorite subreddit',
-    logo: '/logos/reddit.svg',
+    logo: assetUrl('logos/reddit.svg'),
     mark: 'r/',
     palette: {
       background: 'linear-gradient(135deg, #7c2d12 0%, #ea580c 50%, #fdba74 100%)',
@@ -105,7 +107,7 @@ const SOURCE_DEFS: SourceDef[] = [
     id: 'reddit-gallery',
     title: 'Reddit Gallery',
     subtitle: 'Multi-image gallery posts, split into individual images',
-    logo: '/logos/reddit.svg',
+    logo: assetUrl('logos/reddit.svg'),
     mark: '▣',
     palette: {
       background: 'linear-gradient(135deg, #7c2d12 0%, #c2410c 32%, #f97316 68%, #fed7aa 100%)',
@@ -119,7 +121,7 @@ const SOURCE_DEFS: SourceDef[] = [
     id: 'pexels',
     title: 'Pexels',
     subtitle: 'Free photography with fast search',
-    logo: '/logos/pexels.svg',
+    logo: assetUrl('logos/pexels.svg'),
     mark: 'P',
     palette: {
       background: 'linear-gradient(135deg, #052e2b 0%, #115e59 48%, #14b8a6 100%)',
@@ -133,7 +135,7 @@ const SOURCE_DEFS: SourceDef[] = [
     id: 'pixabay',
     title: 'Pixabay',
     subtitle: 'Photos, illustrations, and more',
-    logo: '/logos/pixabay.svg',
+    logo: assetUrl('logos/pixabay.svg'),
     mark: 'Px',
     palette: {
       background: 'linear-gradient(135deg, #1f2937 0%, #374151 52%, #9ca3af 100%)',
@@ -147,7 +149,7 @@ const SOURCE_DEFS: SourceDef[] = [
     id: 'openverse',
     title: 'Openverse',
     subtitle: 'Creative Commons search across multiple archives',
-    logo: '/logos/openverse.svg',
+    logo: assetUrl('logos/openverse.svg'),
     mark: 'Openverse',
     palette: {
       background: 'linear-gradient(135deg, #312e81 0%, #7c3aed 50%, #c084fc 100%)',

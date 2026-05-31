@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.23
+
+- Fix source logos in the Home Assistant app so they resolve correctly through the ingress base path.
+
 ## 0.1.22
 
 - Version bump.
