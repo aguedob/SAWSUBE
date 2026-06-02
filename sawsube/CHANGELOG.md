@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.24
+
+- Improve The Met search relevance by ranking broad API matches more heavily against artist names and titles.
+
 ## 0.1.23
 
 - Fix source logos in the Home Assistant app so they resolve correctly through the ingress base path.
