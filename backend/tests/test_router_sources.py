@@ -59,6 +59,20 @@ async def test_metmuseum_import_requires_id(app_client):
     assert r.status_code == 400
 
 
+async def test_artic_search_mocked(app_client):
+    fake = [{"id": "27992", "url": "https://www.artic.edu/iiif/2/example/full/1686,/0/default.jpg"}]
+    with patch("backend.routers.sources.artic.search",
+               new=AsyncMock(return_value=fake)):
+        r = await app_client.get("/api/sources/artic/search?q=seurat")
+        assert r.status_code == 200
+        assert r.json() == fake
+
+
+async def test_artic_import_requires_id(app_client):
+    r = await app_client.post("/api/sources/artic/import", json={})
+    assert r.status_code == 400
+
+
 async def test_nasa_apod_no_image(app_client):
     with patch("backend.routers.sources.nasa_apod.today",
                new=AsyncMock(return_value={"unsupported": True})):

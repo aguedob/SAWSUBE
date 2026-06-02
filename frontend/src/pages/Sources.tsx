@@ -9,6 +9,7 @@ type SourceId =
   | 'nasa-apod'
   | 'rijksmuseum'
   | 'metmuseum'
+  | 'artic'
   | 'reddit'
   | 'reddit-gallery'
   | 'pexels'
@@ -88,6 +89,19 @@ const SOURCE_DEFS: SourceDef[] = [
       text: '#fff1f2',
     },
     component: MetMuseum,
+  },
+  {
+    id: 'artic',
+    title: 'Art Institute of Chicago',
+    subtitle: 'Open-access public-domain artworks',
+    mark: 'AIC',
+    palette: {
+      background: 'linear-gradient(135deg, #111827 0%, #1d4ed8 46%, #f59e0b 100%)',
+      orb: 'radial-gradient(circle at 78% 20%, rgba(255,255,255,0.2), transparent 26%)',
+      accent: '#fde68a',
+      text: '#eff6ff',
+    },
+    component: ArtInstituteChicago,
   },
   {
     id: 'reddit',
@@ -446,6 +460,33 @@ function MetMuseum() {
       </div>
       <SearchResults loading={loading} items={items} onImport={async (it) => {
         try { await api.post('/api/sources/metmuseum/import', { id: it.id }); t.push({ type: 'success', text: 'Imported' }) }
+        catch (e: any) { t.push({ type: 'error', text: e.message }) }
+      }} />
+    </div>
+  )
+}
+
+function ArtInstituteChicago() {
+  const [q, setQ] = useState('seurat')
+  const [items, setItems] = useState<any[]>([])
+  const [loading, setLoading] = useState(false)
+  const t = useToast()
+  const search = async () => {
+    setItems([])
+    setLoading(true)
+    try { setItems(await api.get(`/api/sources/artic/search?q=${encodeURIComponent(q)}`)) }
+    catch (e: any) { t.push({ type: 'error', text: e.message }) }
+    finally { setLoading(false) }
+  }
+  return (
+    <div className="space-y-3">
+      <p className="text-sm text-muted">Searches public-domain works from the Art Institute of Chicago and imports them via their IIIF image service. No API key required.</p>
+      <div className="flex gap-2">
+        <input className="input" value={q} onChange={(e) => setQ(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && search()} />
+        <button className="btn-primary" onClick={search}>Search</button>
+      </div>
+      <SearchResults loading={loading} items={items} onImport={async (it) => {
+        try { await api.post('/api/sources/artic/import', { id: it.id }); t.push({ type: 'success', text: 'Imported' }) }
         catch (e: any) { t.push({ type: 'error', text: e.message }) }
       }} />
     </div>

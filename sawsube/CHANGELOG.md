@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.25
+
+- Add the Art Institute of Chicago as a new open-access source with artwork search and import support.
+
 ## 0.1.24
 
 - Improve The Met search relevance by ranking broad API matches more heavily against artist names and titles.

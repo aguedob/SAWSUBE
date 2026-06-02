@@ -9,7 +9,7 @@ from ..database import get_session
 from ..models.folder import WatchFolder
 from ..schemas import FolderCreate, FolderOut, ImportPayload, ImageOut
 from ..services.watcher import watcher, scan_folder_now
-from ..services.sources import unsplash, nasa_apod, rijksmuseum, reddit, reddit_gallery, pexels, pixabay, openverse, metmuseum
+from ..services.sources import unsplash, nasa_apod, rijksmuseum, reddit, reddit_gallery, pexels, pixabay, openverse, metmuseum, artic
 from ..services.sources.common import download_and_register
 
 router = APIRouter(prefix="/api/sources", tags=["sources"])
@@ -141,6 +141,28 @@ async def metmuseum_import(payload: ImportPayload):
         info["url"], "metmuseum", f"metmuseum_{info['id']}.jpg",
         {"title": info.get("title"), "credit": info.get("credit"),
          "credit_url": info.get("credit_url"), "html": info.get("html")},
+    )
+    if not img:
+        raise HTTPException(500, "download failed")
+    return img
+
+
+# ── Art Institute of Chicago ───────────────────────────────────────────────
+@router.get("/artic/search")
+async def artic_search(q: str = Query(...), per_page: int = 20):
+    return await artic.search(q, per_page)
+
+
+@router.post("/artic/import", response_model=ImageOut)
+async def artic_import(payload: ImportPayload):
+    if not payload.id:
+        raise HTTPException(400, "id required")
+    info = await artic.get(payload.id)
+    if not info:
+        raise HTTPException(404)
+    img = await download_and_register(
+        info["url"], "artic", f"artic_{info['id']}.jpg",
+        {"title": info.get("title"), "credit": info.get("credit"), "html": info.get("html")},
     )
     if not img:
         raise HTTPException(500, "download failed")
