@@ -1,19 +1,19 @@
 import type { ReactNode } from 'react'
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { IconDefinition } from '@fortawesome/fontawesome-svg-core'
+import type { LucideIcon } from 'lucide-react'
 
 export function IconLabel({
   icon,
   children,
   className = '',
 }: {
-  icon: IconDefinition
+  icon: LucideIcon
   children: ReactNode
   className?: string
 }) {
+  const Icon = icon
   return (
     <span className={`inline-flex items-center gap-2 ${className}`}>
-      <FontAwesomeIcon icon={icon} />
+      <Icon size={16} strokeWidth={2} />
       <span>{children}</span>
     </span>
   )

@@ -1,10 +1,10 @@
 import { useEffect, useState } from 'react'
-import { faArrowsRotate, faForward, faImage, faPalette, faPowerOff } from '@fortawesome/free-solid-svg-icons'
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { Image as ImageIcon, Palette, Power, RefreshCw, StepForward } from 'lucide-react'
 import { api, TV, TVStatus } from '../lib/api'
 import { IconLabel } from '../components/IconLabel'
 import { LoadingInline, LoadingMessage } from '../components/Loading'
 import { useWS } from '../lib/hooks'
+import { decodeHtmlEntities } from '../lib/text'
 
 export default function Dashboard() {
   const [tvs, setTvs] = useState<TV[]>([])
@@ -68,7 +68,7 @@ export default function Dashboard() {
             <div key={t.id} className="card p-4 space-y-3">
               <div className="flex items-center justify-between">
                 <div>
-                  <div className="font-semibold">{t.name}</div>
+                  <div className="font-semibold">{decodeHtmlEntities(t.name)}</div>
                   <div className="text-xs text-muted">{t.ip} · {t.model || '—'}</div>
                 </div>
                 <span className={`badge ${st?.online ? 'border-[#4A7C5F] text-[#4A7C5F]' : 'border-[#A33228] text-[#A33228]'}`}>
@@ -79,10 +79,10 @@ export default function Dashboard() {
                 <div className="text-xs text-muted">Now showing: <span className="text-fg">{st.current}</span></div>
               )}
               <div className="flex gap-2 flex-wrap">
-                <button className="btn-primary" onClick={() => next(t.id)}><IconLabel icon={faForward}>Next image</IconLabel></button>
-                <button className="btn-ghost" onClick={() => api.post(`/api/tvs/${t.id}/artmode/on`)}><IconLabel icon={faPalette}>Art Mode On</IconLabel></button>
-                <button className="btn-ghost" onClick={() => api.post(`/api/tvs/${t.id}/artmode/off`)}><IconLabel icon={faPowerOff}>Art Mode Off</IconLabel></button>
-                <button className="btn-ghost" onClick={refresh}><IconLabel icon={faArrowsRotate}>Refresh</IconLabel></button>
+                <button className="btn-primary" onClick={() => next(t.id)}><IconLabel icon={StepForward}>Next image</IconLabel></button>
+                <button className="btn-ghost" onClick={() => api.post(`/api/tvs/${t.id}/artmode/on`)}><IconLabel icon={Palette}>Art Mode On</IconLabel></button>
+                <button className="btn-ghost" onClick={() => api.post(`/api/tvs/${t.id}/artmode/off`)}><IconLabel icon={Power}>Art Mode Off</IconLabel></button>
+                <button className="btn-ghost" onClick={refresh}><IconLabel icon={RefreshCw}>Refresh</IconLabel></button>
               </div>
             </div>
           )
@@ -108,7 +108,7 @@ export default function Dashboard() {
 function Stat({ label, value }: { label: string; value: any }) {
   return (
     <div className="card p-4">
-      <div className="text-xs text-muted inline-flex items-center gap-2">{label === 'Images' && <FontAwesomeIcon icon={faImage} />}{label}</div>
+      <div className="text-xs text-muted inline-flex items-center gap-2">{label === 'Images' && <ImageIcon size={14} strokeWidth={2} />}{label}</div>
       <div className="text-2xl font-bold">{value ?? '—'}</div>
     </div>
   )

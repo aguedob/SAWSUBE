@@ -21,6 +21,7 @@ type SourceDef = {
   title: string
   subtitle: string
   logo?: string
+  lightLogoOnDark?: boolean
   mark: string
   palette: {
     background: string
@@ -39,6 +40,7 @@ const SOURCE_DEFS: SourceDef[] = [
     title: 'Unsplash',
     subtitle: 'Editorial-quality photography',
     logo: assetUrl('logos/unsplash.svg'),
+    lightLogoOnDark: true,
     mark: 'U',
     palette: {
       background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 52%, #475569 100%)',
@@ -67,6 +69,7 @@ const SOURCE_DEFS: SourceDef[] = [
     title: 'Rijksmuseum',
     subtitle: 'Dutch masters and public-domain art',
     logo: assetUrl('logos/rijksmuseum.svg'),
+    lightLogoOnDark: true,
     mark: 'rijksmuseum',
     palette: {
       background: 'linear-gradient(135deg, #3f1d12 0%, #7c2d12 44%, #d97706 100%)',
@@ -94,11 +97,12 @@ const SOURCE_DEFS: SourceDef[] = [
     id: 'artic',
     title: 'Art Institute of Chicago',
     subtitle: 'Open-access public-domain artworks',
+    logo: assetUrl('logos/artic.svg'),
     mark: 'AIC',
     palette: {
-      background: 'linear-gradient(135deg, #111827 0%, #1d4ed8 46%, #f59e0b 100%)',
+      background: 'linear-gradient(135deg, #450a0a 0%, #b50938 44%, #b50938 100%)',
       orb: 'radial-gradient(circle at 78% 20%, rgba(255,255,255,0.2), transparent 26%)',
-      accent: '#fde68a',
+      accent: '#b50938',
       text: '#eff6ff',
     },
     component: ArtInstituteChicago,
@@ -112,7 +116,7 @@ const SOURCE_DEFS: SourceDef[] = [
     palette: {
       background: 'linear-gradient(135deg, #7c2d12 0%, #ea580c 50%, #fdba74 100%)',
       orb: 'radial-gradient(circle at 20% 20%, rgba(255,247,237,0.25), transparent 28%)',
-      accent: '#fff7ed',
+      accent: '#FF4500',
       text: '#fff7ed',
     },
     component: Reddit,
@@ -126,7 +130,7 @@ const SOURCE_DEFS: SourceDef[] = [
     palette: {
       background: 'linear-gradient(135deg, #7c2d12 0%, #c2410c 32%, #f97316 68%, #fed7aa 100%)',
       orb: 'radial-gradient(circle at 74% 26%, rgba(255,255,255,0.18), transparent 25%)',
-      accent: '#ffedd5',
+      accent: '#FF4500',
       text: '#fff7ed',
     },
     component: RedditGallery,
@@ -150,6 +154,7 @@ const SOURCE_DEFS: SourceDef[] = [
     title: 'Pixabay',
     subtitle: 'Photos, illustrations, and more',
     logo: assetUrl('logos/pixabay.svg'),
+    lightLogoOnDark: true,
     mark: 'Px',
     palette: {
       background: 'linear-gradient(135deg, #1f2937 0%, #374151 52%, #9ca3af 100%)',
@@ -164,6 +169,7 @@ const SOURCE_DEFS: SourceDef[] = [
     title: 'Openverse',
     subtitle: 'Creative Commons search across multiple archives',
     logo: assetUrl('logos/openverse.svg'),
+    lightLogoOnDark: true,
     mark: 'Openverse',
     palette: {
       background: 'linear-gradient(135deg, #312e81 0%, #7c3aed 50%, #c084fc 100%)',
@@ -234,12 +240,35 @@ export function SourceDetail() {
           ← Back to all sources
         </Link>
         <div className="card overflow-hidden">
-          <div className="relative aspect-[21/7] min-h-44 max-h-72">
-            <SourceArtwork source={source} />
-            <div className="absolute inset-0 flex items-end p-6">
-              <div className="max-w-2xl text-[#F4F1ED]">
-                <h1 className="text-3xl">{source.title}</h1>
-                <p className="mt-2 text-sm opacity-90">{source.subtitle}</p>
+          <div className="relative min-h-44 max-h-72">
+            <SourceArtwork source={source} showBrand={false} />
+            <div className="absolute inset-0 z-10 flex items-center justify-start gap-6 px-8 py-4">
+              <div className="flex h-28 w-[32%] shrink-0 items-center">
+                {source.logo ? (
+                  <img
+                    src={source.logo}
+                    alt=""
+                    className={`max-h-28 max-w-full object-contain ${source.lightLogoOnDark ? 'brightness-0 invert' : ''}`}
+                  />
+                ) : (
+                  <div
+                    className="text-7xl font-semibold text-center"
+                    style={{
+                      color: source.palette.accent,
+                      fontFamily: source.id === 'rijksmuseum' || source.id === 'openverse' ? 'var(--font-body)' : 'var(--font-display)',
+                      letterSpacing: source.id === 'rijksmuseum' ? '0.08em' : '0.18em',
+                      textTransform: source.id === 'rijksmuseum' ? 'lowercase' : 'uppercase',
+                    }}
+                  >
+                    {source.mark}
+                  </div>
+                )}
+              </div>
+              <div className="flex h-28 max-w-2xl items-end text-[#F4F1ED]">
+                <div>
+                  <h1 className="text-3xl">{source.title}</h1>
+                  <p className="mt-2 text-sm opacity-90">{source.subtitle}</p>
+                </div>
               </div>
             </div>
           </div>
@@ -250,7 +279,7 @@ export function SourceDetail() {
   )
 }
 
-function SourceArtwork({ source, compact = false }: { source: SourceDef; compact?: boolean }) {
+function SourceArtwork({ source, compact = false, showBrand = true }: { source: SourceDef; compact?: boolean; showBrand?: boolean }) {
   if (compact) {
     return (
       <div className="relative flex-[2_2_0%] overflow-hidden bg-white" aria-hidden="true">
@@ -287,62 +316,122 @@ function SourceArtwork({ source, compact = false }: { source: SourceDef; compact
       aria-hidden="true"
     >
       <div
-        className="absolute inset-0 opacity-90"
-        // style={{
-        //   backgroundImage: [
-        //     source.palette.orb,
-        //     'linear-gradient(135deg, rgba(255,255,255,0.08) 0%, transparent 42%)',
-        //     'repeating-linear-gradient(135deg, rgba(255,255,255,0.08) 0 2px, transparent 2px 18px)',
-        //   ].filter(Boolean).join(', '),
-        // }}
+        className="absolute inset-0"
+        style={{ background: 'linear-gradient(90deg, rgba(15,25,35,0.84) 0%, rgba(15,25,35,0.28) 100%)' }}
       />
-      <div className="absolute inset-0 flex items-center justify-center px-8 pb-16">
-        {source.logo ? (
-          <img
-            src={source.logo}
-            alt=""
-            className="max-h-28 max-w-[62%] object-contain"
-          />
-        ) : (
-          <div
-            className="text-7xl font-semibold text-center"
-            style={{
-              color: source.palette.accent,
-              fontFamily: source.id === 'rijksmuseum' || source.id === 'openverse' ? 'var(--font-body)' : 'var(--font-display)',
-              letterSpacing: source.id === 'rijksmuseum' ? '0.08em' : '0.18em',
-              textTransform: source.id === 'rijksmuseum' ? 'lowercase' : 'uppercase',
-            }}
-          >
-            {source.mark}
-          </div>
-        )}
-      </div>
+      {showBrand ? (
+        <div className="absolute inset-0 z-10 flex items-center justify-start px-8 py-16">
+          {source.logo ? (
+            <img
+              src={source.logo}
+              alt=""
+              className={`max-h-28 max-w-[62%] object-contain ${source.lightLogoOnDark ? 'brightness-0 invert' : ''}`}
+            />
+          ) : (
+            <div
+              className="text-7xl font-semibold text-center"
+              style={{
+                color: source.palette.accent,
+                fontFamily: source.id === 'rijksmuseum' || source.id === 'openverse' ? 'var(--font-body)' : 'var(--font-display)',
+                letterSpacing: source.id === 'rijksmuseum' ? '0.08em' : '0.18em',
+                textTransform: source.id === 'rijksmuseum' ? 'lowercase' : 'uppercase',
+              }}
+            >
+              {source.mark}
+            </div>
+          )}
+        </div>
+      ) : null}
       <div
         className="absolute right-8 bottom-4 h-36 w-36 rounded-full blur-3xl"
         style={{ background: source.palette.accent, opacity: 0.22 }}
-      />
-      <div
-        className="absolute inset-0"
-        style={{ background: 'linear-gradient(90deg, rgba(15,25,35,0.84) 0%, rgba(15,25,35,0.28) 100%)' }}
       />
     </div>
   )
 }
 
 function Grid({ items, onImport }: { items: any[]; onImport: (it: any) => void }) {
+  const [previewIndex, setPreviewIndex] = useState<number | null>(null)
+  const preview = previewIndex === null ? null : items[previewIndex] ?? null
+
+  useEffect(() => {
+    if (previewIndex === null) return
+
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setPreviewIndex(null)
+      if (e.key === 'ArrowRight') setPreviewIndex((i) => (i === null ? i : (i + 1) % items.length))
+      if (e.key === 'ArrowLeft') setPreviewIndex((i) => (i === null ? i : (i - 1 + items.length) % items.length))
+    }
+
+    window.addEventListener('keydown', onKeyDown)
+    return () => window.removeEventListener('keydown', onKeyDown)
+  }, [items.length, previewIndex])
+
   return (
-    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
-      {items.map((it) => (
-        <div key={it.id || it.url} className="card overflow-hidden">
-          <img src={resolveImageSrc(it.thumb || it.url)} className="w-full aspect-[4/3] object-cover" />
-          <div className="p-2 text-xs">
-            <div className="truncate font-semibold">{it.title || '—'}</div>
-            <div className="text-muted truncate">{it.credit || ''}</div>
-            <button className="btn-primary mt-2 w-full" onClick={() => onImport(it)}>Import</button>
+    <>
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+        {items.map((it, index) => (
+          <div key={it.id || it.url} className="card overflow-hidden group">
+            <button
+              type="button"
+              className="block w-full"
+              onClick={() => setPreviewIndex(index)}
+            >
+              <div className="overflow-hidden">
+                <img
+                  src={resolveImageSrc(it.thumb || it.url)}
+                  className="w-full aspect-[4/3] object-cover transition duration-300 ease-out group-hover:scale-[1.03] group-hover:-translate-y-1"
+                />
+              </div>
+            </button>
+            <div className="p-2 text-xs">
+              <div className="truncate font-semibold">{it.title || '—'}</div>
+              <div className="text-muted truncate">{it.credit || ''}</div>
+              <button className="btn-primary mt-2 w-full" onClick={() => onImport(it)}>Import</button>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {preview && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4"
+          onClick={() => setPreviewIndex(null)}
+        >
+          <div
+            className="card w-full max-w-5xl overflow-hidden"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between border-b border-border px-4 py-3">
+              <div className="min-w-0">
+                <div className="truncate font-semibold">{preview.title || 'Preview'}</div>
+                <div className="truncate text-sm text-muted">{preview.credit || ''}</div>
+              </div>
+              <div className="flex items-center gap-2">
+                {items.length > 1 && (
+                  <>
+                    <button className="btn-ghost" onClick={() => setPreviewIndex((i) => (i === null ? i : (i - 1 + items.length) % items.length))}>Prev</button>
+                    <button className="btn-ghost" onClick={() => setPreviewIndex((i) => (i === null ? i : (i + 1) % items.length))}>Next</button>
+                  </>
+                )}
+                <button className="btn-ghost" onClick={() => setPreviewIndex(null)}>Close</button>
+              </div>
+            </div>
+            <div className="bg-black/80">
+              <img
+                src={resolveImageSrc(preview.url || preview.thumb)}
+                className="max-h-[80vh] w-full object-contain"
+              />
+            </div>
+            {items.length > 1 && (
+              <div className="border-t border-border px-4 py-2 text-xs text-muted">
+                Use left/right arrow keys to move between results.
+              </div>
+            )}
           </div>
         </div>
-      ))}
-    </div>
+      )}
+    </>
   )
 }
 

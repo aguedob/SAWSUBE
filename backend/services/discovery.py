@@ -1,5 +1,6 @@
 from __future__ import annotations
 import asyncio
+import html
 import logging
 import socket
 from typing import Any
@@ -65,7 +66,7 @@ async def _probe(client: httpx.AsyncClient, ip: str) -> dict | None:
                 return {
                     "ip": ip,
                     "model": dev.get("modelName"),
-                    "name": dev.get("name") or dev.get("FrameTVSupport"),
+                    "name": html.unescape(dev.get("name") or dev.get("FrameTVSupport") or ""),
                     "type": dev.get("type"),
                     "frame": str(dev.get("FrameTVSupport", "")).lower() == "true",
                     "wifi_mac": dev.get("wifiMac"),

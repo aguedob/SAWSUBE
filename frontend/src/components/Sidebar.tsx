@@ -1,33 +1,35 @@
 import { NavLink, useLocation } from 'react-router-dom'
 import { useEffect, useState } from 'react'
 import {
-  faBolt,
-  faCalendarDays,
-  faCompass,
-  faDisplay,
-  faFilm,
-  faGear,
-  faImage,
-  faSliders,
-  faTelevision,
-  faWandMagicSparkles,
-  faXmark,
-} from '@fortawesome/free-solid-svg-icons'
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+  Clapperboard,
+  Compass,
+  Gauge,
+  Image,
+  Monitor,
+  Settings2,
+  SlidersHorizontal,
+  Sparkles,
+  Tv,
+  WandSparkles,
+  X,
+  Zap,
+  type LucideIcon,
+} from 'lucide-react'
 import { api, TV, TVStatus } from '../lib/api'
 import { useWS } from '../lib/hooks'
+import { decodeHtmlEntities } from '../lib/text'
 
 const links = [
-  ['/', 'Dashboard', faDisplay],
-  ['/library', 'Library', faImage],
-  ['/tv', 'TV Control', faTelevision],
-  ['/discover', 'Discover', faCompass],
-  ['/sources', 'Sources', faFilm],
-  ['/schedules', 'Schedules', faCalendarDays],
-  ['/settings', 'Settings', faSliders],
-  ['/tizenbrew', 'TizenBrew', faWandMagicSparkles],
-  ['/debloat', 'Debloat', faBolt],
-] as const
+  ['/', 'Dashboard', Monitor],
+  ['/library', 'Library', Image],
+  ['/tv', 'TV Control', Tv],
+  ['/discover', 'Discover', Compass],
+  ['/sources', 'Sources', Clapperboard],
+  ['/schedules', 'Schedules', Gauge],
+  ['/settings', 'Settings', SlidersHorizontal],
+  ['/tizenbrew', 'TizenBrew', WandSparkles],
+  ['/debloat', 'Debloat', Zap],
+] as const satisfies ReadonlyArray<readonly [string, string, LucideIcon]>
 
 export function Sidebar({ open, onClose }: { open: boolean; onClose: () => void }) {
   const [tvs, setTvs] = useState<TV[]>([])
@@ -74,7 +76,7 @@ export function Sidebar({ open, onClose }: { open: boolean; onClose: () => void 
         onClick={onClose}
         aria-label="Close menu"
         style={{ color: 'rgb(var(--sidebar-muted))', background: 'none', border: 'none', cursor: 'pointer', fontSize: '18px', lineHeight: 1, padding: '4px' }}
-      ><FontAwesomeIcon icon={faXmark} /></button>
+      ><X size={18} strokeWidth={2} /></button>
       {/* Logo block — Canvas background matches logo's own background for perfect rendering */}
       <div style={{ background: 'rgb(var(--bg))', borderBottom: '3px solid rgb(var(--accent))', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '14px 20px' }}>
         <img src="Logo.png" alt="SAWSUBE" style={{ height: '38px', width: 'auto', display: 'block' }} />
@@ -86,7 +88,10 @@ export function Sidebar({ open, onClose }: { open: boolean; onClose: () => void 
           <NavLink key={to} to={to} end={to === '/'}
             className={({ isActive }) => isActive ? 'sawsube-nav-active' : 'sawsube-nav-item'}>
             <span className="inline-flex items-center gap-3">
-              <FontAwesomeIcon icon={icon} className="w-4" />
+              {(() => {
+                const Icon = icon
+                return <Icon size={16} strokeWidth={2} />
+              })()}
               <span>{label}</span>
             </span>
           </NavLink>
@@ -103,7 +108,7 @@ export function Sidebar({ open, onClose }: { open: boolean; onClose: () => void 
           return (
             <div key={t.id} className="flex items-center gap-2 text-sm" style={{ color: 'rgb(var(--sidebar-muted))' }}>
               <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: dotColor, flexShrink: 0, display: 'inline-block' }} />
-              <span className="truncate">{t.name}</span>
+              <span className="truncate">{decodeHtmlEntities(t.name)}</span>
             </div>
           )
         })}
@@ -111,7 +116,7 @@ export function Sidebar({ open, onClose }: { open: boolean; onClose: () => void 
 
       {/* Footer */}
       <div style={{ borderTop: '1px solid rgb(var(--sidebar-border))', color: 'rgb(var(--sidebar-muted))', fontSize: '11px', fontFamily: 'var(--font-body)', padding: '10px 20px' }}>
-        <span className="inline-flex items-center gap-2"><FontAwesomeIcon icon={faGear} />SAWSUBE · by WB</span>
+        <span className="inline-flex items-center gap-2"><Settings2 size={14} strokeWidth={2} />SAWSUBE · by WB</span>
       </div>
     </aside>
   )

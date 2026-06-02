@@ -3,6 +3,7 @@ import { useLocation, useNavigate } from 'react-router-dom'
 import { api } from '../lib/api'
 import { useToast } from '../components/Toast'
 import { Spinner } from '../components/Loading'
+import { decodeHtmlEntities } from '../lib/text'
 
 export default function Discover() {
   useEffect(() => { document.title = 'SAWSUBE — Discover' }, [])
@@ -58,11 +59,11 @@ export default function Discover() {
           {results.map((r) => (
             <div key={r.ip} className="flex justify-between items-center border border-border rounded p-2">
               <div className="text-sm">
-                <div className="font-semibold">{r.name || r.model || 'Samsung'} {r.frame ? '(Frame)' : ''}</div>
+                <div className="font-semibold">{decodeHtmlEntities(r.name || r.model || 'Samsung')} {r.frame ? '(Frame)' : ''}</div>
                 <div className="text-xs text-muted">{r.ip} · {r.model || 'unknown'} · MAC {r.wifi_mac || '—'}</div>
               </div>
               <button className="btn-primary"
-                      onClick={() => add({ name: r.name || r.model || 'Frame', ip: r.ip, mac: r.wifi_mac, port: 8002 })}>
+                      onClick={() => add({ name: decodeHtmlEntities(r.name || r.model || 'Frame'), ip: r.ip, mac: r.wifi_mac, port: 8002 })}>
                 Add
               </button>
             </div>

@@ -1,6 +1,5 @@
 import { useEffect, useRef, useState, DragEvent } from 'react'
-import { faSpinner, faTrash, faTag, faUpload } from '@fortawesome/free-solid-svg-icons'
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { Airplay, LoaderCircle, Trash2, Upload } from 'lucide-react'
 import { api, Image, TV, makeUrl } from '../lib/api'
 import { IconLabel } from '../components/IconLabel'
 import { LoadingMessage } from '../components/Loading'
@@ -14,10 +13,14 @@ export default function Library() {
   const [loadingTvs, setLoadingTvs] = useState(true)
   const [filter, setFilter] = useState({ source: '', tag: '', favourite: false, q: '' })
   const [selected, setSelected] = useState<Set<number>>(new Set())
+  const [previewIndex, setPreviewIndex] = useState<number | null>(null)
+  const [sendModalOpen, setSendModalOpen] = useState(false)
   const [uploading, setUploading] = useState<{ name: string; pct: number }[]>([])
   const [syncing, setSyncing] = useState<{ tv_id: number; done: number; total: number } | null>(null)
   const fileRef = useRef<HTMLInputElement>(null)
+  const gridRef = useRef<HTMLDivElement>(null)
   const toast = useToast()
+  const preview = previewIndex === null ? null : images[previewIndex] ?? null
 
   const load = async () => {
     setLoading(true)
@@ -54,6 +57,19 @@ export default function Library() {
     })
     return unsub
   }, [])
+
+  useEffect(() => {
+    if (previewIndex === null) return
+
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setPreviewIndex(null)
+      if (e.key === 'ArrowRight') setPreviewIndex((i) => (i === null ? i : (i + 1) % images.length))
+      if (e.key === 'ArrowLeft') setPreviewIndex((i) => (i === null ? i : (i - 1 + images.length) % images.length))
+    }
+
+    window.addEventListener('keydown', onKeyDown)
+    return () => window.removeEventListener('keydown', onKeyDown)
+  }, [images.length, previewIndex])
 
   const upload = async (files: FileList | File[]) => {
     const arr = Array.from(files)
@@ -113,38 +129,73 @@ export default function Library() {
   }
 
   return (
-    <div className="space-y-4" onDragOver={(e) => e.preventDefault()} onDrop={onDrop}>
-      <div className="flex justify-between items-center flex-wrap gap-2">
+    <div
+      className="space-y-4"
+      onDragOver={(e) => e.preventDefault()}
+      onDrop={onDrop}
+      onClick={(e) => {
+        if (!selected.size || !gridRef.current) return
+        if (!gridRef.current.contains(e.target as Node)) setSelected(new Set())
+      }}
+    >
+      <div className="space-y-2">
         <h1 className="text-2xl">Library</h1>
-        <div className="flex gap-2 flex-wrap">
-          <input className="input w-40 min-w-0" placeholder="Search filename" value={filter.q} onChange={(e) => setFilter({ ...filter, q: e.target.value })} />
-          <select className="input w-32 min-w-0" value={filter.source} onChange={(e) => setFilter({ ...filter, source: e.target.value })}>
-            <option value="">All sources</option>
-            <option>local</option><option>unsplash</option><option>nasa</option><option>rijksmuseum</option><option>metmuseum</option><option>reddit</option><option>pexels</option><option>pixabay</option><option>openverse</option>
-          </select>
-          <input className="input w-24 min-w-0" placeholder="Tag" value={filter.tag} onChange={(e) => setFilter({ ...filter, tag: e.target.value })} />
-          <label className="flex items-center gap-1 text-sm"><input type="checkbox" checked={filter.favourite} onChange={(e) => setFilter({ ...filter, favourite: e.target.checked })} /> Fav</label>
-          <button className="btn-primary" onClick={() => fileRef.current?.click()}><IconLabel icon={faUpload}>Upload</IconLabel></button>
-          <input ref={fileRef} type="file" multiple className="hidden" accept="image/*" onChange={(e) => e.target.files && upload(e.target.files)} />
-          <select className="input min-w-0" disabled={syncing !== null || loadingTvs}
-            onChange={(e) => { if (e.target.value) { syncAllTo(Number(e.target.value)); e.target.value = '' } }} defaultValue="">
-            <option value="">{loadingTvs ? 'Loading TVs…' : 'Sync all to TV…'}</option>
-            {tvs.map((t) => <option key={t.id} value={t.id}>{t.name}</option>)}
-          </select>
+        <p className="text-sm text-muted max-w-3xl">
+          Browse imported images, filter by source or tags, and send selections to a TV.
+        </p>
+      </div>
+
+      <div className="card p-4 sm:p-5">
+        <div className="space-y-3">
+          <div className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-[minmax(0,1.5fr)_minmax(0,1fr)_minmax(0,0.9fr)]">
+            <input className="input min-w-0" placeholder="Search filename" value={filter.q} onChange={(e) => setFilter({ ...filter, q: e.target.value })} />
+            <select className="input min-w-0" value={filter.source} onChange={(e) => setFilter({ ...filter, source: e.target.value })}>
+              <option value="">All sources</option>
+              <option>local</option><option>unsplash</option><option>nasa</option><option>rijksmuseum</option><option>metmuseum</option><option>reddit</option><option>pexels</option><option>pixabay</option><option>openverse</option>
+            </select>
+            <input className="input min-w-0" placeholder="Tag" value={filter.tag} onChange={(e) => setFilter({ ...filter, tag: e.target.value })} />
+          </div>
+
+          <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
+            <div className="flex items-center gap-4">
+              <label className="flex items-center gap-2 text-sm text-muted">
+                <input type="checkbox" checked={filter.favourite} onChange={(e) => setFilter({ ...filter, favourite: e.target.checked })} />
+                Favourites only
+              </label>
+              <div className="text-xs text-muted">
+                {loading ? 'Loading images…' : `${images.length} image${images.length === 1 ? '' : 's'}`}
+              </div>
+            </div>
+
+            <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
+              <button className="btn-primary" onClick={() => fileRef.current?.click()}><IconLabel icon={Upload}>Upload</IconLabel></button>
+              <input ref={fileRef} type="file" multiple className="hidden" accept="image/*" onChange={(e) => e.target.files && upload(e.target.files)} />
+              <select className="input min-w-0 sm:min-w-56" disabled={syncing !== null || loadingTvs}
+                onChange={(e) => { if (e.target.value) { syncAllTo(Number(e.target.value)); e.target.value = '' } }} defaultValue="">
+                <option value="">{loadingTvs ? 'Loading TVs…' : 'Sync all to TV…'}</option>
+                {tvs.map((t) => <option key={t.id} value={t.id}>{t.name}</option>)}
+              </select>
+            </div>
+          </div>
         </div>
       </div>
 
-      {selected.size > 0 && (
-        <div className="card p-3 flex items-center gap-2">
-          <span className="text-sm">{selected.size} selected</span>
-          <select className="input w-40" onChange={(e) => e.target.value && bulkSend(Number(e.target.value))} value="" disabled={loadingTvs}>
-            <option value="">{loadingTvs ? 'Loading TVs…' : 'Send all to TV…'}</option>
-            {tvs.map((t) => <option key={t.id} value={t.id}>{t.name}</option>)}
-          </select>
-          <button className="btn-danger" onClick={bulkDelete}><IconLabel icon={faTrash}>Delete selected</IconLabel></button>
-          <button className="btn-ghost" onClick={() => setSelected(new Set())}>Clear</button>
-        </div>
-      )}
+      <div className="card p-3 flex flex-col gap-3 sm:flex-row sm:items-center">
+        <span className="text-sm">{selected.size} selected</span>
+        <button
+          className="btn-ghost"
+          onClick={() => setSendModalOpen(true)}
+          disabled={loadingTvs || selected.size === 0}
+          title={loadingTvs ? 'Loading TVs…' : 'Send selected to TV'}
+          aria-label={loadingTvs ? 'Loading TVs' : 'Send selected to TV'}
+        >
+          <Airplay size={16} strokeWidth={2} />
+        </button>
+        <button className="btn-danger" onClick={bulkDelete} disabled={selected.size === 0} aria-label="Delete selected">
+          <Trash2 size={16} strokeWidth={2} />
+        </button>
+        <button className="btn-ghost" onClick={() => setSelected(new Set())} disabled={selected.size === 0}>Clear</button>
+      </div>
 
       {loading && (
         <LoadingMessage text="Loading library images…" />
@@ -154,45 +205,127 @@ export default function Library() {
         <div className="card p-4 text-sm text-muted">No images found for the current filters.</div>
       )}
 
-      <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3">
-        {images.map((img) => (
-          <div key={img.id} className={`card overflow-hidden relative group ${selected.has(img.id) ? 'ring-2 ring-accent' : ''}`}>
-            <img src={makeUrl(`/api/images/${img.id}/thumbnail`)} alt={img.filename} className="w-full aspect-[4/3] object-cover cursor-pointer"
-                 onClick={() => toggleSel(img.id)} />
-            <div className="p-2 text-xs">
-              <div className="truncate" title={img.filename}>{img.filename}</div>
-              <div className="flex justify-between items-center text-muted mt-1">
-                <span className="badge">{img.source}</span>
-                <button onClick={() => fav(img.id)} title="Favourite">{img.is_favourite ? '★' : '☆'}</button>
+      <div className="min-h-24" ref={gridRef}>
+        <div
+          className="grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6"
+        >
+          {images.map((img) => (
+            <div
+              key={img.id}
+              className="card overflow-hidden relative transition-shadow hover:shadow-lg"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {selected.has(img.id) && (
+                <div
+                  className="pointer-events-none absolute inset-0 z-10 rounded-lg"
+                  style={{ boxShadow: 'inset 0 0 0 3px #C8612A, 0 0 0 1px rgba(200,97,42,0.35)' }}
+                />
+              )}
+              <img src={makeUrl(`/api/images/${img.id}/thumbnail`)} alt={img.filename} className="w-full aspect-[4/3] object-cover cursor-pointer"
+                   onClick={() => toggleSel(img.id)}
+                   onDoubleClick={() => setPreviewIndex(images.findIndex((it) => it.id === img.id))} />
+              <div className="p-3 text-xs space-y-2">
+                <div className="truncate font-medium" title={img.filename}>{img.filename}</div>
+                <div className="flex justify-between items-center text-muted mt-1">
+                  <span className="badge">{img.source}</span>
+                  <button onClick={() => fav(img.id)} title="Favourite">{img.is_favourite ? '★' : '☆'}</button>
+                </div>
               </div>
             </div>
-            <div className="absolute inset-x-0 bottom-0 p-2 bg-black/70 opacity-0 group-hover:opacity-100 [@media(hover:none)]:opacity-100 transition flex flex-col gap-1">
-              <select className="input text-xs" onChange={(e) => e.target.value && sendTo(img.id, Number(e.target.value))} value="">
-                <option value="">{loadingTvs ? 'Loading TVs…' : 'Send to TV…'}</option>
-                {tvs.map((t) => <option key={t.id} value={t.id}>{t.name}</option>)}
-              </select>
-              <div className="flex gap-1">
-                <button className="btn-danger text-xs flex-1" onClick={() => del(img.id)}><IconLabel icon={faTrash}>Del</IconLabel></button>
-                <button className="btn-ghost text-xs flex-1" onClick={() => {
-                  const t = prompt('Tags (comma)', img.tags || '')
-                  if (t !== null) api.put(`/api/images/${img.id}/tags`, { tags: t }).then(load)
-                }}><IconLabel icon={faTag}>Tag</IconLabel></button>
+          ))}
+        </div>
+      </div>
+
+      {preview && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4"
+          onClick={() => setPreviewIndex(null)}
+        >
+          <div
+            className="card w-full max-w-6xl overflow-hidden"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between border-b border-border px-4 py-3">
+              <div className="min-w-0">
+                <div className="truncate font-semibold">{preview.filename}</div>
+                <div className="truncate text-sm text-muted">{preview.source}</div>
               </div>
+              <div className="flex items-center gap-2">
+                {images.length > 1 && (
+                  <>
+                    <button className="btn-ghost" onClick={() => setPreviewIndex((i) => (i === null ? i : (i - 1 + images.length) % images.length))}>Prev</button>
+                    <button className="btn-ghost" onClick={() => setPreviewIndex((i) => (i === null ? i : (i + 1) % images.length))}>Next</button>
+                  </>
+                )}
+                <button className="btn-ghost" onClick={() => setPreviewIndex(null)}>Close</button>
+              </div>
+            </div>
+            <div className="bg-black/80">
+              <img
+                src={makeUrl(`/api/images/${preview.id}/full`)}
+                alt={preview.filename}
+                className="max-h-[80vh] w-full object-contain"
+              />
+            </div>
+            {images.length > 1 && (
+              <div className="border-t border-border px-4 py-2 text-xs text-muted">
+                Single click selects. Double click opens preview. Use left/right arrow keys to move between images.
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {sendModalOpen && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4"
+          onClick={() => setSendModalOpen(false)}
+        >
+          <div
+            className="card w-full max-w-md p-4 space-y-4"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="space-y-1">
+              <div className="font-semibold">Send selected to TV</div>
+              <div className="text-sm text-muted">
+                Choose a TV for the {selected.size} selected image{selected.size === 1 ? '' : 's'}.
+              </div>
+            </div>
+            <div className="space-y-2">
+              {loadingTvs && <div className="text-sm text-muted">Loading TVs…</div>}
+              {!loadingTvs && tvs.map((tv) => (
+                <button
+                  key={tv.id}
+                  className="btn-ghost w-full justify-start"
+                  onClick={async () => {
+                    await bulkSend(tv.id)
+                    setSendModalOpen(false)
+                  }}
+                >
+                  {tv.name}
+                </button>
+              ))}
+              {!loadingTvs && tvs.length === 0 && (
+                <div className="text-sm text-muted">No TVs available.</div>
+              )}
+            </div>
+            <div className="flex justify-end">
+              <button className="btn-ghost" onClick={() => setSendModalOpen(false)}>Close</button>
             </div>
           </div>
-        ))}
-      </div>
+        </div>
+      )}
 
       {uploading.length > 0 && (
         <div className="fixed bottom-4 left-4 card p-3 space-y-2 w-72 z-40">
-          <div className="text-sm font-semibold inline-flex items-center gap-2"><FontAwesomeIcon icon={faSpinner} spin />Uploading…</div>
+          <div className="text-sm font-semibold inline-flex items-center gap-2"><LoaderCircle className="animate-spin" size={16} strokeWidth={2} />Uploading…</div>
           {uploading.map((u, i) => <div key={i} className="text-xs truncate">{u.name}</div>)}
         </div>
       )}
 
       {syncing && (
         <div className="fixed bottom-4 right-4 card p-3 w-72 sm:w-80 max-w-[calc(100vw-2rem)] z-40 space-y-2">
-          <div className="text-sm font-semibold inline-flex items-center gap-2"><FontAwesomeIcon icon={faSpinner} spin />Syncing to TV… {syncing.done}/{syncing.total}</div>
+          <div className="text-sm font-semibold inline-flex items-center gap-2"><LoaderCircle className="animate-spin" size={16} strokeWidth={2} />Syncing to TV… {syncing.done}/{syncing.total}</div>
           <div className="w-full bg-surface rounded-full h-2 overflow-hidden">
             <div className="bg-accent h-2 rounded-full transition-all"
                  style={{ width: `${syncing.total > 0 ? (syncing.done / syncing.total) * 100 : 0}%` }} />

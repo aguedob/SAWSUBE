@@ -1,8 +1,7 @@
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faSpinner } from '@fortawesome/free-solid-svg-icons'
+import { LoaderCircle } from 'lucide-react'
 
 export function Spinner({ className = '' }: { className?: string }) {
-  return <FontAwesomeIcon icon={faSpinner} spin className={className} />
+  return <LoaderCircle className={`animate-spin ${className}`.trim()} size={20} strokeWidth={2} />
 }
 
 export function LoadingMessage({ text }: { text: string }) {
