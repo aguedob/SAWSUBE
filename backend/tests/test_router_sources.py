@@ -73,6 +73,11 @@ async def test_artic_import_requires_id(app_client):
     assert r.status_code == 400
 
 
+async def test_artic_image_proxy_rejects_non_artic_host(app_client):
+    r = await app_client.get("/api/sources/artic/image?url=https://example.com/test.jpg")
+    assert r.status_code == 400
+
+
 async def test_nasa_apod_no_image(app_client):
     with patch("backend.routers.sources.nasa_apod.today",
                new=AsyncMock(return_value={"unsupported": True})):

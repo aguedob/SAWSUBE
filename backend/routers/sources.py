@@ -1,7 +1,11 @@
 from __future__ import annotations
 import asyncio
 import os
+from urllib.parse import urlparse
+
+import httpx
 from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi.responses import Response
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from ..config import settings
@@ -13,6 +17,7 @@ from ..services.sources import unsplash, nasa_apod, rijksmuseum, reddit, reddit_
 from ..services.sources.common import download_and_register
 
 router = APIRouter(prefix="/api/sources", tags=["sources"])
+_ARTIC_IMAGE_HOSTS = {"www.artic.edu", "artic.edu", "api.artic.edu"}
 
 
 # ── Folders ────────────────────────────────────────────────────────────────
@@ -167,6 +172,30 @@ async def artic_import(payload: ImportPayload):
     if not img:
         raise HTTPException(500, "download failed")
     return img
+
+
+@router.get("/artic/image")
+async def artic_image_proxy(url: str = Query(..., description="Art Institute IIIF image URL")):
+    parsed = urlparse(url)
+    if parsed.scheme not in ("http", "https") or parsed.hostname not in _ARTIC_IMAGE_HOSTS:
+        raise HTTPException(400, "host not allowed")
+    if "/iiif/2/" not in parsed.path:
+        raise HTTPException(400, "invalid Art Institute image path")
+
+    try:
+        async with httpx.AsyncClient(timeout=20.0, follow_redirects=True) as client:
+            res = await client.get(url)
+    except httpx.RequestError as e:
+        raise HTTPException(502, f"Could not reach upstream: {e}")
+
+    if res.status_code != 200:
+        raise HTTPException(res.status_code, "Upstream image request failed")
+
+    return Response(
+        content=res.content,
+        media_type=res.headers.get("content-type", "image/jpeg"),
+        headers={"Cache-Control": "public, max-age=2592000"},
+    )
 
 
 # ── Pexels ────────────────────────────────────────────────────────────────

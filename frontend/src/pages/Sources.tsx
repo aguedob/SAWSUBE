@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Link, Navigate, useParams } from 'react-router-dom'
-import { api } from '../lib/api'
+import { api, makeUrl } from '../lib/api'
 import { useToast } from '../components/Toast'
 import { Spinner } from '../components/Loading'
 
@@ -334,7 +334,7 @@ function Grid({ items, onImport }: { items: any[]; onImport: (it: any) => void }
     <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
       {items.map((it) => (
         <div key={it.id || it.url} className="card overflow-hidden">
-          <img src={it.thumb || it.url} className="w-full aspect-[4/3] object-cover" />
+          <img src={resolveImageSrc(it.thumb || it.url)} className="w-full aspect-[4/3] object-cover" />
           <div className="p-2 text-xs">
             <div className="truncate font-semibold">{it.title || '—'}</div>
             <div className="text-muted truncate">{it.credit || ''}</div>
@@ -344,6 +344,10 @@ function Grid({ items, onImport }: { items: any[]; onImport: (it: any) => void }
       ))}
     </div>
   )
+}
+
+function resolveImageSrc(src: string) {
+  return src.startsWith('/') ? makeUrl(src) : src
 }
 
 function SearchResults({

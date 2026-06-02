@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import httpx
+from urllib.parse import quote
 
 SEARCH_URL = "https://api.artic.edu/api/v1/artworks/search"
 DETAIL_URL = "https://api.artic.edu/api/v1/artworks/{artwork_id}"
@@ -26,6 +27,11 @@ def _image_url(iiif_url: str, image_id: str, width: int) -> str:
     return f"{iiif_url.rstrip('/')}/{image_id}/full/{width},/0/default.jpg"
 
 
+def _thumb_proxy_url(iiif_url: str, image_id: str, width: int = 400) -> str:
+    remote_url = _image_url(iiif_url, image_id, width)
+    return f"/api/sources/artic/image?url={quote(remote_url, safe='')}"
+
+
 def _normalize_artwork(payload: dict, iiif_url: str | None = None) -> dict | None:
     image_id = payload.get("image_id")
     if not payload.get("is_public_domain") or not image_id:
@@ -43,7 +49,7 @@ def _normalize_artwork(payload: dict, iiif_url: str | None = None) -> dict | Non
     return {
         "id": str(payload.get("id")),
         "url": _image_url(base_iiif_url, image_id, 1686),
-        "thumb": _image_url(base_iiif_url, image_id, 400),
+        "thumb": _thumb_proxy_url(base_iiif_url, image_id),
         "title": title,
         "credit": credit,
         "html": f"https://www.artic.edu/artworks/{payload.get('id')}",

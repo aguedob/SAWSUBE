@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.26
+
+- Fix Art Institute of Chicago search thumbnails by proxying IIIF preview images through the backend so they load correctly under browser cross-origin policies.
+
 ## 0.1.25
 
 - Add the Art Institute of Chicago as a new open-access source with artwork search and import support.
