@@ -74,7 +74,7 @@ async def test_artic_import_requires_id(app_client):
 
 
 async def test_artic_image_proxy_rejects_non_artic_host(app_client):
-    r = await app_client.get("/api/sources/artic/image?url=https://example.com/test.jpg")
+    r = await app_client.get("/api/sources/artic/image/bad/id?w=400")
     assert r.status_code == 400
 
 

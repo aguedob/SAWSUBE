@@ -1,7 +1,6 @@
 from __future__ import annotations
 import asyncio
 import os
-from urllib.parse import urlparse
 
 import httpx
 from fastapi import APIRouter, Depends, HTTPException, Query
@@ -17,7 +16,14 @@ from ..services.sources import unsplash, nasa_apod, rijksmuseum, reddit, reddit_
 from ..services.sources.common import download_and_register
 
 router = APIRouter(prefix="/api/sources", tags=["sources"])
-_ARTIC_IMAGE_HOSTS = {"www.artic.edu", "artic.edu", "api.artic.edu"}
+_ARTIC_IMAGE_HEADERS = {
+    "User-Agent": (
+        "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) "
+        "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36"
+    ),
+    "Accept": "image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8",
+    "Referer": "https://www.artic.edu/",
+}
 
 
 # ── Folders ────────────────────────────────────────────────────────────────
@@ -174,17 +180,18 @@ async def artic_import(payload: ImportPayload):
     return img
 
 
-@router.get("/artic/image")
-async def artic_image_proxy(url: str = Query(..., description="Art Institute IIIF image URL")):
-    parsed = urlparse(url)
-    if parsed.scheme not in ("http", "https") or parsed.hostname not in _ARTIC_IMAGE_HOSTS:
-        raise HTTPException(400, "host not allowed")
-    if "/iiif/2/" not in parsed.path:
-        raise HTTPException(400, "invalid Art Institute image path")
+@router.get("/artic/image/{image_id}")
+async def artic_image_proxy(
+    image_id: str,
+    w: int = Query(400, ge=50, le=2000, description="Requested image width"),
+):
+    if not image_id or any(ch in image_id for ch in "/?#"):
+        raise HTTPException(400, "invalid image id")
+    image_url = artic._image_url(artic.DEFAULT_IIIF_URL, image_id, w)
 
     try:
-        async with httpx.AsyncClient(timeout=20.0, follow_redirects=True) as client:
-            res = await client.get(url)
+        async with httpx.AsyncClient(timeout=20.0, follow_redirects=True, headers=_ARTIC_IMAGE_HEADERS) as client:
+            res = await client.get(image_url)
     except httpx.RequestError as e:
         raise HTTPException(502, f"Could not reach upstream: {e}")
 

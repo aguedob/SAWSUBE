@@ -64,8 +64,7 @@ async def test_search_returns_normalized_list(tmp_workdir):
     assert result["title"] == _FAKE_ARTWORK["title"]
     assert result["credit"] == "Georges Seurat"
     assert result["html"] == "https://www.artic.edu/artworks/27992"
-    assert result["thumb"].startswith("/api/sources/artic/image?url=")
-    assert "full%2F400%2C%2F0%2Fdefault.jpg" in result["thumb"]
+    assert result["thumb"] == "/api/sources/artic/image/2d484387-2509-5e8e-2c43-22f9981972eb?w=400"
     assert result["url"].endswith("/full/1686,/0/default.jpg")
 
 

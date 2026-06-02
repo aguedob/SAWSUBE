@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.27
+
+- Fix Art Institute of Chicago thumbnails under Home Assistant ingress by switching the preview proxy to a stable image-id route with upstream-friendly image request headers.
+
 ## 0.1.26
 
 - Fix Art Institute of Chicago search thumbnails by proxying IIIF preview images through the backend so they load correctly under browser cross-origin policies.
