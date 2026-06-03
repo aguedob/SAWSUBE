@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.30
+
+- Fix `Send to TV` failures caused by duplicate active `tv_images` rows in older installs by preferring the newest valid row and deactivating stale duplicates automatically.
+
 ## 0.1.29
 
 - Add additive SQLite schema migrations on startup so Home Assistant upgrades pick up newer TV/image columns and `Send to TV` no longer fails against older databases.

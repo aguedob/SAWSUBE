@@ -37,6 +37,35 @@ def _safe_filename(name: str) -> str:
     return name
 
 
+async def _get_active_tv_image(
+    s: AsyncSession,
+    *,
+    tv_id: int,
+    image_id: int,
+) -> TVImage | None:
+    rows = (await s.execute(
+        select(TVImage).where(
+            TVImage.tv_id == tv_id,
+            TVImage.image_id == image_id,
+            TVImage.is_on_tv.is_(True),
+        )
+    )).scalars().all()
+    if not rows:
+        return None
+
+    # Prefer the newest active row that still has a remote id and deactivate stale duplicates.
+    rows.sort(key=lambda row: row.id, reverse=True)
+    primary = next((row for row in rows if row.remote_id), rows[0])
+    changed = False
+    for row in rows:
+        if row.id != primary.id and row.is_on_tv:
+            row.is_on_tv = False
+            changed = True
+    if changed:
+        await s.commit()
+    return primary
+
+
 @router.get("", response_model=list[ImageOut])
 async def list_images(
     s: AsyncSession = Depends(get_session),
@@ -212,9 +241,7 @@ async def send_to_tv(image_id: int, tv_id: int, display: bool = True,
         img.processed_path = processed_path
         img.width, img.height = w, h
         await s.commit()
-    existing = (await s.execute(
-        select(TVImage).where(TVImage.tv_id == tv_id, TVImage.image_id == image_id, TVImage.is_on_tv.is_(True))
-    )).scalar_one_or_none()
+    existing = await _get_active_tv_image(s, tv_id=tv_id, image_id=image_id)
     if existing and existing.remote_id:
         ti = existing
     else:
@@ -286,13 +313,7 @@ async def _sync_library_task(tv_id: int, image_ids: list[int]) -> None:
                 failed += 1
                 continue
             # Race-condition guard: re-check whether already uploaded since task started
-            existing = (await s.execute(
-                select(TVImage).where(
-                    TVImage.tv_id == tv_id,
-                    TVImage.image_id == image_id,
-                    TVImage.is_on_tv.is_(True),
-                )
-            )).scalar_one_or_none()
+            existing = await _get_active_tv_image(s, tv_id=tv_id, image_id=image_id)
             if existing and existing.remote_id:
                 skipped += 1
                 await ws_manager.broadcast({
