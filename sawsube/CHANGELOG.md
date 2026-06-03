@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.29
+
+- Add additive SQLite schema migrations on startup so Home Assistant upgrades pick up newer TV/image columns and `Send to TV` no longer fails against older databases.
+
 ## 0.1.28
 
 - Expand Discover Art and Library UX with denser source browsing, richer artwork metadata in the library, improved preview modals, and infinite-scroll style loading for larger result sets.
