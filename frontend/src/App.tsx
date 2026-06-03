@@ -6,7 +6,6 @@ import { ToastProvider } from './components/Toast'
 import Dashboard from './pages/Dashboard'
 import Library from './pages/Library'
 import TVControl from './pages/TVControl'
-import Discover from './pages/Discover'
 import Sources, { SourceDetail } from './pages/Sources'
 import Schedules from './pages/Schedules'
 import Settings from './pages/Settings'
@@ -45,7 +44,6 @@ export default function App() {
               <Route path="/" element={<Dashboard />} />
               <Route path="/library" element={<Library />} />
               <Route path="/tv" element={<TVControl />} />
-              <Route path="/discover" element={<Discover />} />
               <Route path="/sources" element={<Sources />} />
               <Route path="/sources/:sourceId" element={<SourceDetail />} />
               <Route path="/schedules" element={<Schedules />} />

@@ -73,6 +73,25 @@ async def test_artic_import_requires_id(app_client):
     assert r.status_code == 400
 
 
+async def test_artic_import_uses_artic_image_headers(app_client):
+    info = {
+        "id": "27992",
+        "url": "https://www.artic.edu/iiif/2/example/full/1686,/0/default.jpg",
+        "title": "A Sunday on La Grande Jatte - 1884",
+        "credit": "Georges Seurat",
+        "html": "https://www.artic.edu/artworks/27992",
+    }
+    with patch("backend.routers.sources.artic.get", new=AsyncMock(return_value=info)), patch(
+        "backend.routers.sources.download_and_register",
+        new=AsyncMock(return_value={"id": 1}),
+    ) as download:
+        r = await app_client.post("/api/sources/artic/import", json={"id": "27992"})
+
+    assert r.status_code == 200
+    assert download.await_args.kwargs["headers"]["Referer"] == "https://www.artic.edu/"
+    assert "Mozilla/5.0" in download.await_args.kwargs["headers"]["User-Agent"]
+
+
 async def test_artic_image_proxy_rejects_non_artic_host(app_client):
     r = await app_client.get("/api/sources/artic/image/bad/id?w=400")
     assert r.status_code == 400

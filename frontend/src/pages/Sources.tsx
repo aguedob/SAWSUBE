@@ -1,7 +1,9 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { Link, Navigate, useParams } from 'react-router-dom'
+import { ChevronLeft, ChevronRight, Plus, X } from 'lucide-react'
 import { api, makeUrl } from '../lib/api'
 import { useToast } from '../components/Toast'
+import { IconLabel } from '../components/IconLabel'
 import { Spinner } from '../components/Loading'
 
 type SourceId =
@@ -182,37 +184,42 @@ const SOURCE_DEFS: SourceDef[] = [
 ]
 
 const SOURCE_MAP = Object.fromEntries(SOURCE_DEFS.map((source) => [source.id, source])) as Record<SourceId, SourceDef>
+const RESULTS_PAGE_STEP = 24
+const SOURCE_RESULTS_MAX = 72
+const OPENVERSE_RESULTS_MAX = 96
 
 export default function Sources() {
-  useEffect(() => { document.title = 'SAWSUBE — Sources' }, [])
+  useEffect(() => { document.title = 'SAWSUBE — Discover Art' }, [])
 
   return (
-    <div className="space-y-5">
-      <div className="space-y-2">
-        <h1 className="text-2xl">Sources</h1>
+    <div className="flex h-full min-h-0 flex-col gap-5 overflow-hidden">
+      <div className="shrink-0 space-y-2">
+        <h1 className="text-2xl">Discover Art</h1>
         <p className="text-sm text-muted max-w-3xl">
-          Pick a source to open its own search page. Each source keeps its own workflow, filters, and import action.
+          Explore different sources to discover and import art into your library.
         </p>
       </div>
-      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
-        {SOURCE_DEFS.map((source) => (
-          <Link
-            key={source.id}
-            to={`/sources/${source.id}`}
-            className="group card overflow-hidden transition-transform duration-200 hover:-translate-y-1"
-          >
-            <div className="relative aspect-[11/12] overflow-hidden flex flex-col" style={{ background: source.palette.background }}>
-              <SourceArtwork source={source} compact />
-              <div
-                className="relative z-10 flex-1 p-4 text-[#F4F1ED] bg-gradient-to-b from-black/70 via-black/40 to-black/20"
-                // style={{ background: `linear-gradient(180deg, rgba(15,25,35,0.04) 0%, rgba(15,25,35,0.78) 28%, ${source.palette.accent} 100%)` }}
-              >
-                <div className="text-xl font-semibold">{source.title}</div>
-                <div className="text-sm opacity-90">{source.subtitle}</div>
+      <div className="min-h-0 flex-1 overflow-y-auto pr-1">
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-3 xl:grid-cols-5">
+          {SOURCE_DEFS.map((source) => (
+            <Link
+              key={source.id}
+              to={`/sources/${source.id}`}
+              className="group card overflow-hidden transition-transform duration-200 hover:-translate-y-1"
+            >
+              <div className="relative aspect-[11/12] overflow-hidden flex flex-col" style={{ background: source.palette.background }}>
+                <SourceArtwork source={source} compact />
+                <div
+                  className="relative z-10 flex min-h-28 flex-col justify-start p-4 text-[#F4F1ED] bg-gradient-to-b from-black/70 via-black/40 to-black/20"
+                  // style={{ background: `linear-gradient(180deg, rgba(15,25,35,0.04) 0%, rgba(15,25,35,0.78) 28%, ${source.palette.accent} 100%)` }}
+                >
+                  <div className="text-xl font-semibold">{source.title}</div>
+                  <div className="text-sm opacity-90">{source.subtitle}</div>
+                </div>
               </div>
-            </div>
-          </Link>
-        ))}
+            </Link>
+          ))}
+        </div>
       </div>
     </div>
   )
@@ -226,7 +233,7 @@ export function SourceDetail() {
   }, [params.sourceId])
 
   useEffect(() => {
-    document.title = source ? `SAWSUBE — ${source.title}` : 'SAWSUBE — Sources'
+    document.title = source ? `SAWSUBE — ${source.title}` : 'SAWSUBE — Discover Art'
   }, [source])
 
   if (!source) return <Navigate to="/sources" replace />
@@ -237,7 +244,7 @@ export function SourceDetail() {
     <div className="space-y-5">
       <div className="space-y-3">
         <Link to="/sources" className="inline-flex items-center text-sm text-muted hover:text-fg">
-          ← Back to all sources
+          ← Back to Discover Art
         </Link>
         <div className="card overflow-hidden">
           <div className="relative min-h-44 max-h-72">
@@ -352,6 +359,7 @@ function SourceArtwork({ source, compact = false, showBrand = true }: { source: 
 
 function Grid({ items, onImport }: { items: any[]; onImport: (it: any) => void }) {
   const [previewIndex, setPreviewIndex] = useState<number | null>(null)
+  const [previewLoading, setPreviewLoading] = useState(false)
   const preview = previewIndex === null ? null : items[previewIndex] ?? null
 
   useEffect(() => {
@@ -366,6 +374,10 @@ function Grid({ items, onImport }: { items: any[]; onImport: (it: any) => void }
     window.addEventListener('keydown', onKeyDown)
     return () => window.removeEventListener('keydown', onKeyDown)
   }, [items.length, previewIndex])
+
+  useEffect(() => {
+    setPreviewLoading(previewIndex !== null)
+  }, [previewIndex])
 
   return (
     <>
@@ -395,11 +407,11 @@ function Grid({ items, onImport }: { items: any[]; onImport: (it: any) => void }
 
       {preview && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4 animate-[fadeIn_180ms_ease-out]"
           onClick={() => setPreviewIndex(null)}
         >
           <div
-            className="card w-full max-w-5xl overflow-hidden"
+            className="card w-full max-w-5xl overflow-hidden animate-[modalIn_220ms_ease-out]"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-center justify-between border-b border-border px-4 py-3">
@@ -410,24 +422,46 @@ function Grid({ items, onImport }: { items: any[]; onImport: (it: any) => void }
               <div className="flex items-center gap-2">
                 {items.length > 1 && (
                   <>
-                    <button className="btn-ghost" onClick={() => setPreviewIndex((i) => (i === null ? i : (i - 1 + items.length) % items.length))}>Prev</button>
-                    <button className="btn-ghost" onClick={() => setPreviewIndex((i) => (i === null ? i : (i + 1) % items.length))}>Next</button>
+                    <button className="btn-ghost" aria-label="Previous result" title="Previous result" onClick={() => setPreviewIndex((i) => (i === null ? i : (i - 1 + items.length) % items.length))}>
+                      <ChevronLeft size={16} strokeWidth={2} />
+                    </button>
+                    <button className="btn-ghost" aria-label="Next result" title="Next result" onClick={() => setPreviewIndex((i) => (i === null ? i : (i + 1) % items.length))}>
+                      <ChevronRight size={16} strokeWidth={2} />
+                    </button>
                   </>
                 )}
-                <button className="btn-ghost" onClick={() => setPreviewIndex(null)}>Close</button>
+                <button className="btn-ghost" aria-label="Close preview" title="Close preview" onClick={() => setPreviewIndex(null)}>
+                  <X size={16} strokeWidth={2} />
+                </button>
               </div>
             </div>
-            <div className="bg-black/80">
+            <div className="relative min-h-[60vh] bg-black/80">
+              {previewLoading && (
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <div className="flex flex-col items-center gap-3 text-[#F4F1ED]">
+                    <Spinner className="text-accent text-3xl" />
+                    <span className="text-sm text-[#F4F1ED]">Loading preview…</span>
+                  </div>
+                </div>
+              )}
               <img
                 src={resolveImageSrc(preview.url || preview.thumb)}
-                className="max-h-[80vh] w-full object-contain"
+                className={`max-h-[80vh] w-full object-contain transition-opacity duration-200 ${previewLoading ? 'opacity-0' : 'opacity-100'}`}
+                onLoad={() => setPreviewLoading(false)}
+                onError={() => setPreviewLoading(false)}
               />
             </div>
-            {items.length > 1 && (
-              <div className="border-t border-border px-4 py-2 text-xs text-muted">
-                Use left/right arrow keys to move between results.
+            <div className="flex items-center justify-between border-t border-border px-4 py-3">
+              <div className="text-xs text-muted">
+                {items.length > 1 ? 'Use left/right arrow keys to move between results.' : '\u00A0'}
               </div>
-            )}
+              <button
+                className="btn-primary"
+                onClick={() => onImport(preview)}
+              >
+                <IconLabel icon={Plus}>Add to Library</IconLabel>
+              </button>
+            </div>
           </div>
         </div>
       )}
@@ -443,11 +477,30 @@ function SearchResults({
   loading,
   items,
   onImport,
+  hasMore = false,
+  loadingMore = false,
+  onLoadMore,
 }: {
   loading: boolean
   items: any[]
   onImport: (it: any) => void
+  hasMore?: boolean
+  loadingMore?: boolean
+  onLoadMore?: () => void
 }) {
+  const sentinelRef = useRef<HTMLDivElement | null>(null)
+
+  useEffect(() => {
+    if (!hasMore || !onLoadMore || loading || loadingMore || !sentinelRef.current) return
+
+    const observer = new IntersectionObserver((entries) => {
+      if (entries[0]?.isIntersecting) onLoadMore()
+    }, { rootMargin: '300px 0px' })
+
+    observer.observe(sentinelRef.current)
+    return () => observer.disconnect()
+  }, [hasMore, loading, loadingMore, onLoadMore])
+
   if (loading) {
     return (
       <div className="card p-10 flex items-center justify-center min-h-56">
@@ -458,28 +511,47 @@ function SearchResults({
       </div>
     )
   }
-  return <Grid items={items} onImport={onImport} />
+  return (
+    <div className="space-y-4">
+      <Grid items={items} onImport={onImport} />
+      {(hasMore || loadingMore) && (
+        <div ref={sentinelRef} className="flex items-center justify-center py-4">
+          {loadingMore && (
+            <div className="flex items-center gap-2 text-sm text-muted">
+              <Spinner className="text-accent text-xl" />
+              <span>Loading more…</span>
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  )
 }
 
 function Unsplash() {
   const [q, setQ] = useState('landscape')
   const [items, setItems] = useState<any[]>([])
   const [loading, setLoading] = useState(false)
+  const [loadingMore, setLoadingMore] = useState(false)
+  const [perPage, setPerPage] = useState(RESULTS_PAGE_STEP)
   const t = useToast()
-  const search = async () => {
-    setItems([])
-    setLoading(true)
-    try { setItems(await api.get(`/api/sources/unsplash/search?q=${encodeURIComponent(q)}`)) }
+  const search = async (nextPerPage = RESULTS_PAGE_STEP, append = false) => {
+    if (!append) setItems([])
+    append ? setLoadingMore(true) : setLoading(true)
+    try {
+      setItems(await api.get(`/api/sources/unsplash/search?q=${encodeURIComponent(q)}&per_page=${nextPerPage}`))
+      setPerPage(nextPerPage)
+    }
     catch (e: any) { t.push({ type: 'error', text: e.message }) }
-    finally { setLoading(false) }
+    finally { append ? setLoadingMore(false) : setLoading(false) }
   }
   return (
     <div className="space-y-3">
       <div className="flex gap-2">
         <input className="input" value={q} onChange={(e) => setQ(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && search()} />
-        <button className="btn-primary" onClick={search}>Search</button>
+        <button className="btn-primary" onClick={() => search()}>Search</button>
       </div>
-      <SearchResults loading={loading} items={items} onImport={async (it) => {
+      <SearchResults loading={loading} items={items} loadingMore={loadingMore} hasMore={items.length >= perPage && perPage < SOURCE_RESULTS_MAX} onLoadMore={() => search(Math.min(perPage + RESULTS_PAGE_STEP, SOURCE_RESULTS_MAX), true)} onImport={async (it) => {
         try { await api.post('/api/sources/unsplash/import', { id: it.id }); t.push({ type: 'success', text: 'Imported' }) }
         catch (e: any) { t.push({ type: 'error', text: e.message }) }
       }} />
@@ -510,21 +582,23 @@ function Rijks() {
   const [q, setQ] = useState('vermeer')
   const [items, setItems] = useState<any[]>([])
   const [loading, setLoading] = useState(false)
+  const [loadingMore, setLoadingMore] = useState(false)
+  const [perPage, setPerPage] = useState(RESULTS_PAGE_STEP)
   const t = useToast()
-  const search = async () => {
-    setItems([])
-    setLoading(true)
-    try { setItems(await api.get(`/api/sources/rijksmuseum/search?q=${encodeURIComponent(q)}`)) }
+  const search = async (nextPerPage = RESULTS_PAGE_STEP, append = false) => {
+    if (!append) setItems([])
+    append ? setLoadingMore(true) : setLoading(true)
+    try { setItems(await api.get(`/api/sources/rijksmuseum/search?q=${encodeURIComponent(q)}&per_page=${nextPerPage}`)); setPerPage(nextPerPage) }
     catch (e: any) { t.push({ type: 'error', text: e.message }) }
-    finally { setLoading(false) }
+    finally { append ? setLoadingMore(false) : setLoading(false) }
   }
   return (
     <div className="space-y-3">
       <div className="flex gap-2">
         <input className="input" value={q} onChange={(e) => setQ(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && search()} />
-        <button className="btn-primary" onClick={search}>Search</button>
+        <button className="btn-primary" onClick={() => search()}>Search</button>
       </div>
-      <SearchResults loading={loading} items={items} onImport={async (it) => {
+      <SearchResults loading={loading} items={items} loadingMore={loadingMore} hasMore={items.length >= perPage && perPage < SOURCE_RESULTS_MAX} onLoadMore={() => search(Math.min(perPage + RESULTS_PAGE_STEP, SOURCE_RESULTS_MAX), true)} onImport={async (it) => {
         try { await api.post('/api/sources/rijksmuseum/import', { id: it.id }); t.push({ type: 'success', text: 'Imported' }) }
         catch (e: any) { t.push({ type: 'error', text: e.message }) }
       }} />
@@ -536,22 +610,24 @@ function MetMuseum() {
   const [q, setQ] = useState('monet')
   const [items, setItems] = useState<any[]>([])
   const [loading, setLoading] = useState(false)
+  const [loadingMore, setLoadingMore] = useState(false)
+  const [perPage, setPerPage] = useState(RESULTS_PAGE_STEP)
   const t = useToast()
-  const search = async () => {
-    setItems([])
-    setLoading(true)
-    try { setItems(await api.get(`/api/sources/metmuseum/search?q=${encodeURIComponent(q)}`)) }
+  const search = async (nextPerPage = RESULTS_PAGE_STEP, append = false) => {
+    if (!append) setItems([])
+    append ? setLoadingMore(true) : setLoading(true)
+    try { setItems(await api.get(`/api/sources/metmuseum/search?q=${encodeURIComponent(q)}&per_page=${nextPerPage}`)); setPerPage(nextPerPage) }
     catch (e: any) { t.push({ type: 'error', text: e.message }) }
-    finally { setLoading(false) }
+    finally { append ? setLoadingMore(false) : setLoading(false) }
   }
   return (
     <div className="space-y-3">
       <p className="text-sm text-muted">Searches The Metropolitan Museum of Art’s public domain collection. No API key required.</p>
       <div className="flex gap-2">
         <input className="input" value={q} onChange={(e) => setQ(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && search()} />
-        <button className="btn-primary" onClick={search}>Search</button>
+        <button className="btn-primary" onClick={() => search()}>Search</button>
       </div>
-      <SearchResults loading={loading} items={items} onImport={async (it) => {
+      <SearchResults loading={loading} items={items} loadingMore={loadingMore} hasMore={items.length >= perPage && perPage < SOURCE_RESULTS_MAX} onLoadMore={() => search(Math.min(perPage + RESULTS_PAGE_STEP, SOURCE_RESULTS_MAX), true)} onImport={async (it) => {
         try { await api.post('/api/sources/metmuseum/import', { id: it.id }); t.push({ type: 'success', text: 'Imported' }) }
         catch (e: any) { t.push({ type: 'error', text: e.message }) }
       }} />
@@ -563,22 +639,24 @@ function ArtInstituteChicago() {
   const [q, setQ] = useState('seurat')
   const [items, setItems] = useState<any[]>([])
   const [loading, setLoading] = useState(false)
+  const [loadingMore, setLoadingMore] = useState(false)
+  const [perPage, setPerPage] = useState(RESULTS_PAGE_STEP)
   const t = useToast()
-  const search = async () => {
-    setItems([])
-    setLoading(true)
-    try { setItems(await api.get(`/api/sources/artic/search?q=${encodeURIComponent(q)}`)) }
+  const search = async (nextPerPage = RESULTS_PAGE_STEP, append = false) => {
+    if (!append) setItems([])
+    append ? setLoadingMore(true) : setLoading(true)
+    try { setItems(await api.get(`/api/sources/artic/search?q=${encodeURIComponent(q)}&per_page=${nextPerPage}`)); setPerPage(nextPerPage) }
     catch (e: any) { t.push({ type: 'error', text: e.message }) }
-    finally { setLoading(false) }
+    finally { append ? setLoadingMore(false) : setLoading(false) }
   }
   return (
     <div className="space-y-3">
       <p className="text-sm text-muted">Searches public-domain works from the Art Institute of Chicago and imports them via their IIIF image service. No API key required.</p>
       <div className="flex gap-2">
         <input className="input" value={q} onChange={(e) => setQ(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && search()} />
-        <button className="btn-primary" onClick={search}>Search</button>
+        <button className="btn-primary" onClick={() => search()}>Search</button>
       </div>
-      <SearchResults loading={loading} items={items} onImport={async (it) => {
+      <SearchResults loading={loading} items={items} loadingMore={loadingMore} hasMore={items.length >= perPage && perPage < SOURCE_RESULTS_MAX} onLoadMore={() => search(Math.min(perPage + RESULTS_PAGE_STEP, SOURCE_RESULTS_MAX), true)} onImport={async (it) => {
         try { await api.post('/api/sources/artic/import', { id: it.id }); t.push({ type: 'success', text: 'Imported' }) }
         catch (e: any) { t.push({ type: 'error', text: e.message }) }
       }} />
@@ -590,21 +668,23 @@ function Pixabay() {
   const [q, setQ] = useState('landscape')
   const [items, setItems] = useState<any[]>([])
   const [loading, setLoading] = useState(false)
+  const [loadingMore, setLoadingMore] = useState(false)
+  const [perPage, setPerPage] = useState(RESULTS_PAGE_STEP)
   const t = useToast()
-  const search = async () => {
-    setItems([])
-    setLoading(true)
-    try { setItems(await api.get(`/api/sources/pixabay/search?q=${encodeURIComponent(q)}`)) }
+  const search = async (nextPerPage = RESULTS_PAGE_STEP, append = false) => {
+    if (!append) setItems([])
+    append ? setLoadingMore(true) : setLoading(true)
+    try { setItems(await api.get(`/api/sources/pixabay/search?q=${encodeURIComponent(q)}&per_page=${nextPerPage}`)); setPerPage(nextPerPage) }
     catch (e: any) { t.push({ type: 'error', text: e.message }) }
-    finally { setLoading(false) }
+    finally { append ? setLoadingMore(false) : setLoading(false) }
   }
   return (
     <div className="space-y-3">
       <div className="flex gap-2">
         <input className="input" value={q} onChange={(e) => setQ(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && search()} placeholder="Search Pixabay photos…" />
-        <button className="btn-primary" onClick={search}>Search</button>
+        <button className="btn-primary" onClick={() => search()}>Search</button>
       </div>
-      <SearchResults loading={loading} items={items} onImport={async (it) => {
+      <SearchResults loading={loading} items={items} loadingMore={loadingMore} hasMore={items.length >= perPage && perPage < SOURCE_RESULTS_MAX} onLoadMore={() => search(Math.min(perPage + RESULTS_PAGE_STEP, SOURCE_RESULTS_MAX), true)} onImport={async (it) => {
         try { await api.post('/api/sources/pixabay/import', { id: it.id }); t.push({ type: 'success', text: 'Imported' }) }
         catch (e: any) { t.push({ type: 'error', text: e.message }) }
       }} />
@@ -616,21 +696,23 @@ function Pexels() {
   const [q, setQ] = useState('landscape')
   const [items, setItems] = useState<any[]>([])
   const [loading, setLoading] = useState(false)
+  const [loadingMore, setLoadingMore] = useState(false)
+  const [perPage, setPerPage] = useState(RESULTS_PAGE_STEP)
   const t = useToast()
-  const search = async () => {
-    setItems([])
-    setLoading(true)
-    try { setItems(await api.get(`/api/sources/pexels/search?q=${encodeURIComponent(q)}`)) }
+  const search = async (nextPerPage = RESULTS_PAGE_STEP, append = false) => {
+    if (!append) setItems([])
+    append ? setLoadingMore(true) : setLoading(true)
+    try { setItems(await api.get(`/api/sources/pexels/search?q=${encodeURIComponent(q)}&per_page=${nextPerPage}`)); setPerPage(nextPerPage) }
     catch (e: any) { t.push({ type: 'error', text: e.message }) }
-    finally { setLoading(false) }
+    finally { append ? setLoadingMore(false) : setLoading(false) }
   }
   return (
     <div className="space-y-3">
       <div className="flex gap-2">
         <input className="input" value={q} onChange={(e) => setQ(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && search()} placeholder="Search Pexels photos…" />
-        <button className="btn-primary" onClick={search}>Search</button>
+        <button className="btn-primary" onClick={() => search()}>Search</button>
       </div>
-      <SearchResults loading={loading} items={items} onImport={async (it) => {
+      <SearchResults loading={loading} items={items} loadingMore={loadingMore} hasMore={items.length >= perPage && perPage < SOURCE_RESULTS_MAX} onLoadMore={() => search(Math.min(perPage + RESULTS_PAGE_STEP, SOURCE_RESULTS_MAX), true)} onImport={async (it) => {
         try { await api.post('/api/sources/pexels/import', { id: it.id }); t.push({ type: 'success', text: 'Imported' }) }
         catch (e: any) { t.push({ type: 'error', text: e.message }) }
       }} />
@@ -644,13 +726,15 @@ function Reddit() {
   const [tt, setTt] = useState('week')
   const [items, setItems] = useState<any[]>([])
   const [loading, setLoading] = useState(false)
+  const [loadingMore, setLoadingMore] = useState(false)
+  const [limit, setLimit] = useState(RESULTS_PAGE_STEP)
   const t = useToast()
-  const fetchIt = async () => {
-    setItems([])
-    setLoading(true)
-    try { setItems(await api.get(`/api/sources/reddit/fetch?sub=${sub}&sort=${sort}&t=${tt}&limit=24`)) }
+  const fetchIt = async (nextLimit = RESULTS_PAGE_STEP, append = false) => {
+    if (!append) setItems([])
+    append ? setLoadingMore(true) : setLoading(true)
+    try { setItems(await api.get(`/api/sources/reddit/fetch?sub=${sub}&sort=${sort}&t=${tt}&limit=${nextLimit}`)); setLimit(nextLimit) }
     catch (e: any) { t.push({ type: 'error', text: e.message }) }
-    finally { setLoading(false) }
+    finally { append ? setLoadingMore(false) : setLoading(false) }
   }
   return (
     <div className="space-y-3">
@@ -662,9 +746,9 @@ function Reddit() {
         <select className="input w-28" value={tt} onChange={(e) => setTt(e.target.value)}>
           <option>day</option><option>week</option><option>month</option><option>year</option><option>all</option>
         </select>
-        <button className="btn-primary" onClick={fetchIt}>Fetch</button>
+        <button className="btn-primary" onClick={() => fetchIt()}>Fetch</button>
       </div>
-      <SearchResults loading={loading} items={items} onImport={async (it) => {
+      <SearchResults loading={loading} items={items} loadingMore={loadingMore} hasMore={items.length >= limit && limit < SOURCE_RESULTS_MAX} onLoadMore={() => fetchIt(Math.min(limit + RESULTS_PAGE_STEP, SOURCE_RESULTS_MAX), true)} onImport={async (it) => {
         try {
           await api.post('/api/sources/reddit/import', {
             url: it.url, id: it.id,
@@ -685,19 +769,22 @@ function Openverse() {
   const [size, setSize] = useState('large')
   const [items, setItems] = useState<any[]>([])
   const [loading, setLoading] = useState(false)
+  const [loadingMore, setLoadingMore] = useState(false)
+  const [pageSize, setPageSize] = useState(RESULTS_PAGE_STEP)
   const t = useToast()
-  const search = async () => {
-    setItems([])
-    setLoading(true)
+  const search = async (nextPageSize = RESULTS_PAGE_STEP, append = false) => {
+    if (!append) setItems([])
+    append ? setLoadingMore(true) : setLoading(true)
     try {
-      const params = new URLSearchParams({ q, page_size: '24' })
+      const params = new URLSearchParams({ q, page_size: String(nextPageSize) })
       if (category) params.set('category', category)
       if (licenseType) params.set('license_type', licenseType)
       if (aspectRatio) params.set('aspect_ratio', aspectRatio)
       if (size) params.set('size', size)
       setItems(await api.get(`/api/sources/openverse/search?${params}`))
+      setPageSize(nextPageSize)
     } catch (e: any) { t.push({ type: 'error', text: e.message }) }
-    finally { setLoading(false) }
+    finally { append ? setLoadingMore(false) : setLoading(false) }
   }
   return (
     <div className="space-y-3">
@@ -728,9 +815,9 @@ function Openverse() {
           <option value="commercial">Commercial use OK</option>
           <option value="modification">Modifications OK</option>
         </select>
-        <button className="btn-primary" onClick={search}>Search</button>
+        <button className="btn-primary" onClick={() => search()}>Search</button>
       </div>
-      <SearchResults loading={loading} items={items} onImport={async (it) => {
+      <SearchResults loading={loading} items={items} loadingMore={loadingMore} hasMore={items.length >= pageSize && pageSize < OPENVERSE_RESULTS_MAX} onLoadMore={() => search(Math.min(pageSize + RESULTS_PAGE_STEP, OPENVERSE_RESULTS_MAX), true)} onImport={async (it) => {
         try {
           await api.post('/api/sources/openverse/import', { id: it.id })
           t.push({ type: 'success', text: 'Imported' })
@@ -746,13 +833,15 @@ function RedditGallery() {
   const [tt, setTt] = useState('week')
   const [items, setItems] = useState<any[]>([])
   const [loading, setLoading] = useState(false)
+  const [loadingMore, setLoadingMore] = useState(false)
+  const [limit, setLimit] = useState(25)
   const t = useToast()
-  const fetchIt = async () => {
-    setItems([])
-    setLoading(true)
-    try { setItems(await api.get(`/api/sources/reddit-gallery/fetch?sub=${sub}&sort=${sort}&t=${tt}&limit=25`)) }
+  const fetchIt = async (nextLimit = 25, append = false) => {
+    if (!append) setItems([])
+    append ? setLoadingMore(true) : setLoading(true)
+    try { setItems(await api.get(`/api/sources/reddit-gallery/fetch?sub=${sub}&sort=${sort}&t=${tt}&limit=${nextLimit}`)); setLimit(nextLimit) }
     catch (e: any) { t.push({ type: 'error', text: e.message }) }
-    finally { setLoading(false) }
+    finally { append ? setLoadingMore(false) : setLoading(false) }
   }
   return (
     <div className="space-y-3">
@@ -765,9 +854,9 @@ function RedditGallery() {
         <select className="input w-28" value={tt} onChange={(e) => setTt(e.target.value)}>
           <option>day</option><option>week</option><option>month</option><option>year</option><option>all</option>
         </select>
-        <button className="btn-primary" onClick={fetchIt}>Fetch</button>
+        <button className="btn-primary" onClick={() => fetchIt()}>Fetch</button>
       </div>
-      <SearchResults loading={loading} items={items} onImport={async (it) => {
+      <SearchResults loading={loading} items={items} loadingMore={loadingMore} hasMore={items.length >= limit && limit < SOURCE_RESULTS_MAX} onLoadMore={() => fetchIt(Math.min(limit + RESULTS_PAGE_STEP, SOURCE_RESULTS_MAX), true)} onImport={async (it) => {
         try {
           await api.post('/api/sources/reddit-gallery/import', {
             url: it.url, id: it.id,

@@ -12,7 +12,14 @@ from ..image_processor import sha256_file, process_image, make_thumbnail
 log = logging.getLogger(__name__)
 
 
-async def download_and_register(url: str, source: str, filename: str, meta: dict) -> Image | None:
+async def download_and_register(
+    url: str,
+    source: str,
+    filename: str,
+    meta: dict,
+    *,
+    headers: dict[str, str] | None = None,
+) -> Image | None:
     dest_dir = os.path.join(settings.IMAGE_FOLDER, source)
     os.makedirs(dest_dir, exist_ok=True)
     safe_fn = "".join(c for c in filename if c.isalnum() or c in "._-") or "image.jpg"
@@ -24,7 +31,7 @@ async def download_and_register(url: str, source: str, filename: str, meta: dict
     while os.path.exists(dest):
         dest = f"{base}_{n}{ext}"
         n += 1
-    async with httpx.AsyncClient(timeout=30.0, follow_redirects=True) as client:
+    async with httpx.AsyncClient(timeout=30.0, follow_redirects=True, headers=headers) as client:
         r = await client.get(url)
         r.raise_for_status()
         with open(dest, "wb") as f:

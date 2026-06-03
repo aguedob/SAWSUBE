@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.1.28
+
+- Expand Discover Art and Library UX with denser source browsing, richer artwork metadata in the library, improved preview modals, and infinite-scroll style loading for larger result sets.
+- Move TV discovery into Settings, refresh several empty states and controls, and streamline library actions, filtering, and sticky layouts.
+- Restrict The Met source search results to painting-like works and make Art Institute of Chicago imports use more reliable upstream image request headers.
+
 ## 0.1.27
 
 - Fix Art Institute of Chicago thumbnails under Home Assistant ingress by switching the preview proxy to a stable image-id route with upstream-friendly image request headers.

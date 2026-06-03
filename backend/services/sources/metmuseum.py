@@ -31,7 +31,21 @@ def _normalize_object(payload: dict) -> dict | None:
         "_artist": payload.get("artistDisplayName") or "",
         "_culture": payload.get("culture") or "",
         "_object_name": payload.get("objectName") or "",
+        "_classification": payload.get("classification") or "",
+        "_medium": payload.get("medium") or "",
     }
+
+
+def _is_painting(item: dict) -> bool:
+    classification = str(item.get("_classification", "")).strip().lower()
+    object_name = str(item.get("_object_name", "")).strip().lower()
+    medium = str(item.get("_medium", "")).strip().lower()
+
+    if classification == "paintings":
+        return True
+    if object_name in {"painting", "paintings"}:
+        return True
+    return medium.startswith(("oil on", "tempera on", "acrylic on", "watercolor on", "gouache on"))
 
 
 def _score_result(item: dict, query: str) -> float:
@@ -93,7 +107,7 @@ async def search(query: str, per_page: int = 20) -> list[dict]:
                 item = await _fetch_object(client, object_id)
             except httpx.HTTPError:
                 continue
-            if item:
+            if item and _is_painting(item):
                 results.append(item)
             if len(results) >= max(limit * 3, 40):
                 break
@@ -104,6 +118,8 @@ async def search(query: str, per_page: int = 20) -> list[dict]:
         item.pop("_artist", None)
         item.pop("_culture", None)
         item.pop("_object_name", None)
+        item.pop("_classification", None)
+        item.pop("_medium", None)
     return trimmed
 
 

@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { Tv2 } from 'lucide-react'
 import { api, TV, TVImage, TVStatus, makeUrl } from '../lib/api'
 import { useToast } from '../components/Toast'
 import { decodeHtmlEntities } from '../lib/text'
@@ -29,14 +30,22 @@ export default function TVControl() {
       </div>
       {active && tvs.find((x) => x.id === active) && <TVPanel tv={tvs.find((x) => x.id === active)!} />}
       {tvs.length === 0 && (
-        <div className="card p-6 space-y-4">
-          <div>
-            <div className="font-semibold">No TVs connected yet</div>
-            <div className="text-muted text-sm">Jump to Discover and start scanning your network automatically.</div>
+        <div className="card mx-auto flex max-w-2xl flex-col items-center gap-5 px-6 py-10 text-center">
+          <div
+            className="flex h-20 w-20 items-center justify-center rounded-full"
+            style={{ background: 'linear-gradient(135deg, rgba(200,97,42,0.18), rgba(200,97,42,0.06))', border: '1px solid rgba(200,97,42,0.22)' }}
+          >
+            <Tv2 size={40} strokeWidth={1.8} className="text-accent" />
+          </div>
+          <div className="space-y-2">
+            <div className="text-2xl">No TVs connected yet</div>
+            <div className="text-muted text-sm max-w-md">
+              Open TV settings and we&apos;ll start scanning your network automatically so you can add your first screen in a couple of clicks.
+            </div>
           </div>
           <button
             className="btn-primary"
-            onClick={() => navigate('/discover', { state: { autoScan: true } })}
+            onClick={() => navigate('/settings', { state: { autoScan: true } })}
           >
             Add your first TV
           </button>

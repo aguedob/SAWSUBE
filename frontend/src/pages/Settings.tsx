@@ -1,15 +1,21 @@
 import { useEffect, useState } from 'react'
+import { useLocation, useNavigate } from 'react-router-dom'
 import { FolderPlus, FolderTree, Save, Sparkles, Trash2 } from 'lucide-react'
 import { api, Folder, TV } from '../lib/api'
 import { useToast } from '../components/Toast'
 import { IconLabel } from '../components/IconLabel'
-import { LoadingInline } from '../components/Loading'
+import { LoadingInline, Spinner } from '../components/Loading'
 import { ThemeMode, useTheme } from '../lib/hooks'
 import { decodeHtmlEntities } from '../lib/text'
 
 export default function Settings() {
+  const location = useLocation()
+  const navigate = useNavigate()
   const [folders, setFolders] = useState<Folder[]>([])
   const [newPath, setNewPath] = useState('')
+  const [scanning, setScanning] = useState(false)
+  const [results, setResults] = useState<any[]>([])
+  const [manual, setManual] = useState({ name: 'Frame TV', ip: '', mac: '' })
   const [tvs, setTvs] = useState<TV[]>([])
   const [tvNames, setTvNames] = useState<Record<number, string>>({})
   const [loading, setLoading] = useState(true)
@@ -31,11 +37,39 @@ export default function Settings() {
     }
   }
   useEffect(() => { document.title = 'SAWSUBE — Settings'; load() }, [])
+  useEffect(() => {
+    if (!(location.state as { autoScan?: boolean } | null)?.autoScan) return
+    navigate(location.pathname, { replace: true, state: null })
+    scan()
+  }, [location.pathname, location.state, navigate])
 
   const addFolder = async () => {
     if (!newPath) return
     try { await api.post('/api/sources/folders', { path: newPath, is_active: true, auto_display: false }); setNewPath(''); load() }
     catch (e: any) { t.push({ type: 'error', text: e.message }) }
+  }
+
+  const scan = async () => {
+    setScanning(true)
+    try {
+      const found = await api.get<any[]>('/api/tvs/discover')
+      setResults(found)
+      if (!found.length) t.push({ type: 'info', text: 'No TVs found' })
+    } catch (e: any) {
+      t.push({ type: 'error', text: e.message })
+    } finally {
+      setScanning(false)
+    }
+  }
+
+  const addTv = async (payload: any) => {
+    try {
+      const tv: any = await api.post('/api/tvs', payload)
+      t.push({ type: 'success', text: `Added ${tv.name}. Now press Pair on TV Control.` })
+      load()
+    } catch (e: any) {
+      t.push({ type: 'error', text: e.message })
+    }
   }
 
   const renameTv = async (tv: TV) => {
@@ -76,22 +110,68 @@ export default function Settings() {
       </Section>
 
       <Section title="TVs">
-        {loading && <LoadingInline text="Loading registered TVs…" />}
-        {tvs.map((t) => (
-          <div key={t.id} className="flex flex-col gap-2 py-2 border-b last:border-b-0 border-border">
-            <div className="text-sm text-muted">{t.ip} · {t.mac || 'no MAC'}</div>
-            <div className="flex gap-2 items-center">
-              <input
-                className="input"
-                value={tvNames[t.id] ?? ''}
-                onChange={(e) => setTvNames((prev) => ({ ...prev, [t.id]: e.target.value }))}
-              />
-              <button className="btn-primary" disabled={!(tvNames[t.id] ?? '').trim() || (tvNames[t.id] ?? '').trim() === t.name} onClick={() => renameTv(t)}><IconLabel icon={Save}>Save</IconLabel></button>
-              <button className="btn-danger" onClick={() => confirm('Remove TV?') && api.del(`/api/tvs/${t.id}`).then(load)}><IconLabel icon={Trash2}>Remove</IconLabel></button>
+        <div className="space-y-3">
+          <div className="font-semibold">Registered TVs</div>
+          {loading && <LoadingInline text="Loading registered TVs…" />}
+          {tvs.map((t) => (
+            <div key={t.id} className="flex flex-col gap-2 py-2 border-b last:border-b-0 border-border">
+              <div className="text-sm text-muted">{t.ip} · {t.mac || 'no MAC'}</div>
+              <div className="flex gap-2 items-center">
+                <input
+                  className="input"
+                  value={tvNames[t.id] ?? ''}
+                  onChange={(e) => setTvNames((prev) => ({ ...prev, [t.id]: e.target.value }))}
+                />
+                <button className="btn-primary" disabled={!(tvNames[t.id] ?? '').trim() || (tvNames[t.id] ?? '').trim() === t.name} onClick={() => renameTv(t)}><IconLabel icon={Save}>Save</IconLabel></button>
+                <button className="btn-danger" onClick={() => confirm('Remove TV?') && api.del(`/api/tvs/${t.id}`).then(load)}><IconLabel icon={Trash2}>Remove</IconLabel></button>
+              </div>
             </div>
+          ))}
+          {!loading && tvs.length === 0 && <div className="text-muted text-sm">No TVs registered.</div>}
+
+          <div className="pt-2 font-semibold">Discover TVs</div>
+          <div className="flex flex-wrap gap-2">
+            <button className="btn-primary" onClick={scan} disabled={scanning}>
+              {scanning ? 'Scanning…' : 'Scan network'}
+            </button>
           </div>
-        ))}
-        {!loading && tvs.length === 0 && <div className="text-muted text-sm">No TVs registered.</div>}
+          {scanning && (
+            <div className="py-6 flex flex-col items-center justify-center text-center gap-3">
+              <Spinner className="text-accent text-3xl" />
+              <div>
+                <div className="font-semibold">Scanning your network…</div>
+                <div className="text-sm text-muted">Looking for Samsung TVs on your local network.</div>
+              </div>
+            </div>
+          )}
+          {!scanning && results.length > 0 && (
+            <div className="space-y-2">
+              {results.map((r) => (
+                <div key={r.ip} className="flex justify-between items-center border border-border rounded p-2 gap-3">
+                  <div className="text-sm min-w-0">
+                    <div className="font-semibold truncate">{decodeHtmlEntities(r.name || r.model || 'Samsung')} {r.frame ? '(Frame)' : ''}</div>
+                    <div className="text-xs text-muted truncate">{r.ip} · {r.model || 'unknown'} · MAC {r.wifi_mac || '—'}</div>
+                  </div>
+                  <button
+                    className="btn-primary shrink-0"
+                    onClick={() => addTv({ name: decodeHtmlEntities(r.name || r.model || 'Frame'), ip: r.ip, mac: r.wifi_mac, port: 8002 })}
+                  >
+                    Add
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+          <div className="space-y-3 pt-2">
+            <div className="font-semibold">Manual entry</div>
+            <div className="grid grid-cols-1 gap-2 md:grid-cols-3">
+              <input className="input" placeholder="Name" value={manual.name} onChange={(e) => setManual({ ...manual, name: e.target.value })} />
+              <input className="input" placeholder="IP" value={manual.ip} onChange={(e) => setManual({ ...manual, ip: e.target.value })} />
+              <input className="input" placeholder="MAC (for WoL)" value={manual.mac} onChange={(e) => setManual({ ...manual, mac: e.target.value })} />
+            </div>
+            <button className="btn-primary" disabled={!manual.ip} onClick={() => addTv({ ...manual, port: 8002 })}>Add manually</button>
+          </div>
+        </div>
       </Section>
 
       <Section title="Theme">

@@ -2,7 +2,6 @@ import { NavLink, useLocation } from 'react-router-dom'
 import { useEffect, useState } from 'react'
 import {
   Clapperboard,
-  Compass,
   Gauge,
   Image,
   Monitor,
@@ -22,9 +21,8 @@ import { decodeHtmlEntities } from '../lib/text'
 const links = [
   ['/', 'Dashboard', Monitor],
   ['/library', 'Library', Image],
+  ['/sources', 'Discover Art', Clapperboard],
   ['/tv', 'TV Control', Tv],
-  ['/discover', 'Discover', Compass],
-  ['/sources', 'Sources', Clapperboard],
   ['/schedules', 'Schedules', Gauge],
   ['/settings', 'Settings', SlidersHorizontal],
   ['/tizenbrew', 'TizenBrew', WandSparkles],

@@ -174,6 +174,7 @@ async def artic_import(payload: ImportPayload):
     img = await download_and_register(
         info["url"], "artic", f"artic_{info['id']}.jpg",
         {"title": info.get("title"), "credit": info.get("credit"), "html": info.get("html")},
+        headers=_ARTIC_IMAGE_HEADERS,
     )
     if not img:
         raise HTTPException(500, "download failed")
