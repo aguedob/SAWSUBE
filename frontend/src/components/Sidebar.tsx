@@ -58,7 +58,7 @@ export function Sidebar({ open, onClose }: { open: boolean; onClose: () => void 
 
   return (
     <aside
-      style={{ background: 'rgb(var(--sidebar-bg))', width: '240px' }}
+      style={{ background: 'rgb(var(--sidebar-bg))', borderRight: '1px solid rgb(var(--sidebar-border))', width: '240px' }}
       className={[
         'shrink-0 h-full flex flex-col overflow-y-auto',
         // Mobile: fixed overlay drawer, slides in/out
@@ -76,7 +76,7 @@ export function Sidebar({ open, onClose }: { open: boolean; onClose: () => void 
         style={{ color: 'rgb(var(--sidebar-muted))', background: 'none', border: 'none', cursor: 'pointer', fontSize: '18px', lineHeight: 1, padding: '4px' }}
       ><X size={18} strokeWidth={2} /></button>
       {/* Logo block — Canvas background matches logo's own background for perfect rendering */}
-      <div style={{ background: 'rgb(var(--bg))', borderBottom: '3px solid rgb(var(--accent))', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '14px 20px' }}>
+      <div style={{ background: 'rgb(var(--sidebar-bg))', borderBottom: '3px solid rgb(var(--accent))', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '14px 20px' }}>
         <img src="Logo.png" alt="SAWSUBE" style={{ height: '38px', width: 'auto', display: 'block' }} />
       </div>
 

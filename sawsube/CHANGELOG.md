@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.31
+
+- Refresh the frontend presentation with additional sidebar, TV Control, and global styling polish for the latest Home Assistant UI tweaks.
+
 ## 0.1.30
 
 - Fix `Send to TV` failures caused by duplicate active `tv_images` rows in older installs by preferring the newest valid row and deactivating stale duplicates automatically.

@@ -33,7 +33,7 @@ export default function TVControl() {
         <div className="card mx-auto flex max-w-2xl flex-col items-center gap-5 px-6 py-10 text-center">
           <div
             className="flex h-20 w-20 items-center justify-center rounded-full"
-            style={{ background: 'linear-gradient(135deg, rgba(200,97,42,0.18), rgba(200,97,42,0.06))', border: '1px solid rgba(200,97,42,0.22)' }}
+            style={{ background: 'linear-gradient(135deg, rgba(38, 131, 203, 0.18), rgba(38, 84, 175, 0.06))', border: '1px solid rgba(26, 100, 150, 0.92)' }}
           >
             <Tv2 size={40} strokeWidth={1.8} className="text-accent" />
           </div>
