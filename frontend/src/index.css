@@ -60,6 +60,15 @@ code, pre { font-family: var(--font-mono); }
   }
 }
 
+@keyframes tvSendProgress {
+  0% {
+    transform: translateX(-120%);
+  }
+  100% {
+    transform: translateX(220%);
+  }
+}
+
 /* ── Buttons ── */
 .btn { @apply px-4 py-2 rounded-md text-sm font-medium transition border border-transparent; font-family: var(--font-body); cursor: pointer; }
 .btn-primary { @apply btn; background-color: #2a81c8; color: #F4F1ED; }
@@ -78,6 +87,7 @@ code, pre { font-family: var(--font-mono); }
 /* ── Cards / Badges ── */
 .card  { @apply rounded-lg; background: rgb(var(--card)); border: 1px solid rgb(var(--border)); }
 .badge { @apply inline-flex items-center gap-1 px-2 py-0.5 rounded; font-size: 11px; font-weight: 500; font-family: var(--font-body); background: rgb(var(--card)); border: 1px solid rgb(var(--border)); }
+.tv-send-progress { animation: tvSendProgress 1.2s ease-in-out infinite; }
 
 /* ── SAWSUBE Sidebar nav ── */
 .sawsube-nav-item {

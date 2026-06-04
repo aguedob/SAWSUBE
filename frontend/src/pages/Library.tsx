@@ -2,7 +2,7 @@ import { useEffect, useRef, useState, DragEvent } from 'react'
 import { ChevronLeft, ChevronRight, Heart, LoaderCircle, RefreshCw, Send, Trash2, Upload, X } from 'lucide-react'
 import { api, Image, TV, makeUrl } from '../lib/api'
 import { IconLabel } from '../components/IconLabel'
-import { LoadingMessage } from '../components/Loading'
+import { LoadingMessage, Spinner } from '../components/Loading'
 import { useToast } from '../components/Toast'
 import { wsClient } from '../lib/ws'
 
@@ -16,6 +16,7 @@ export default function Library() {
   const [selected, setSelected] = useState<Set<number>>(new Set())
   const [previewIndex, setPreviewIndex] = useState<number | null>(null)
   const [tvModalMode, setTvModalMode] = useState<'send-selected' | 'send-preview' | 'sync-all' | null>(null)
+  const [sendingToTv, setSendingToTv] = useState<{ tvId: number; tvName: string; count: number } | null>(null)
   const [uploading, setUploading] = useState<{ name: string; pct: number }[]>([])
   const [syncing, setSyncing] = useState<{ tv_id: number; done: number; total: number } | null>(null)
   const fileRef = useRef<HTMLInputElement>(null)
@@ -143,6 +144,19 @@ export default function Library() {
     if (!confirm(`Delete ${selected.size} images?`)) return
     await Promise.all(Array.from(selected).map((id) => api.del(`/api/images/${id}?also_from_tv=true`).catch(() => null)))
     setSelected(new Set()); load()
+  }
+
+  const handleSendToTv = async (tv: TV) => {
+    const count = tvModalMode === 'send-preview' ? 1 : selected.size
+    setSendingToTv({ tvId: tv.id, tvName: tv.name, count })
+    try {
+      if (tvModalMode === 'sync-all') await syncAllTo(tv.id)
+      else if (tvModalMode === 'send-preview' && preview) await sendTo(preview.id, tv.id)
+      else await bulkSend(tv.id)
+      setTvModalMode(null)
+    } finally {
+      setSendingToTv(null)
+    }
   }
 
   return (
@@ -380,16 +394,27 @@ export default function Library() {
             </div>
             <div className="space-y-2">
               {loadingTvs && <div className="text-sm text-muted">Loading TVs…</div>}
-              {!loadingTvs && tvs.map((tv) => (
+              {!loadingTvs && sendingToTv && (
+                <div className="rounded-lg border border-border bg-[rgba(var(--accent),0.08)] px-4 py-5 text-center">
+                  <div className="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-full border border-border bg-card shadow-sm animate-pulse">
+                    <Spinner className="text-accent" />
+                  </div>
+                  <div className="text-sm font-medium text-fg">
+                    Sending {sendingToTv.count === 1 ? 'image' : `${sendingToTv.count} images`} to {sendingToTv.tvName}
+                  </div>
+                  <div className="mt-1 text-xs text-muted">
+                    The TV upload can take a few seconds. This window will close when it finishes.
+                  </div>
+                  <div className="mt-4 h-1.5 overflow-hidden rounded-full bg-[rgba(var(--accent),0.15)]">
+                    <div className="tv-send-progress h-full w-1/2 rounded-full bg-accent" />
+                  </div>
+                </div>
+              )}
+              {!loadingTvs && !sendingToTv && tvs.map((tv) => (
                 <button
                   key={tv.id}
                   className="btn-ghost w-full justify-start"
-                  onClick={async () => {
-                    if (tvModalMode === 'sync-all') await syncAllTo(tv.id)
-                    else if (tvModalMode === 'send-preview' && preview) await sendTo(preview.id, tv.id)
-                    else await bulkSend(tv.id)
-                    setTvModalMode(null)
-                  }}
+                  onClick={() => handleSendToTv(tv)}
                 >
                   {tv.name}
                 </button>
@@ -399,7 +424,7 @@ export default function Library() {
               )}
             </div>
             <div className="flex justify-end">
-              <button className="btn-ghost" onClick={() => setTvModalMode(null)}>Close</button>
+              <button className="btn-ghost" onClick={() => setTvModalMode(null)} disabled={sendingToTv !== null}>Close</button>
             </div>
           </div>
         </div>
