@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.32
+
+- Add animated in-modal feedback while sending images to a TV so the upload flow no longer looks frozen.
+
 ## 0.1.31
 
 - Refresh the frontend presentation with additional sidebar, TV Control, and global styling polish for the latest Home Assistant UI tweaks.
